@@ -14,8 +14,8 @@ type EmployeeApple struct {
 	Age       int
 }
 
-func main() {
-	//  PascalCase
+func main(){
+		//  PascalCase
 	// Eg. CalculateArea, UserInfo, NewHTTPRequest
 	// Structs, interfaces, enums
 
@@ -32,5 +32,4 @@ func main() {
 
 	var employeeID = 1001
 	fmt.Println("EmployeeID: ", employeeID)
-
 }
