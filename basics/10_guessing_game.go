@@ -18,7 +18,7 @@ func main() {
 	fmt.Println("Welcome to the Guessing Game!")
 	fmt.Println("I have chosen a number between 1 and 100")
 	fmt.Println("Can you guess what it is?")
-
+ 
 	var guess int
 	for {
 		fmt.Println("Enter your guess: ")

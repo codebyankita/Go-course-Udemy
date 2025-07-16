@@ -20,7 +20,7 @@ Once a concept is covered in a lecture, that file is either:
 
 🔄 Renamed (e.g., to .txt), so Go won’t try to compile it.
 
-📁 Moved into a subfolder like basics/, and its package line is updated to match the folder (package basics).
+📁 Moved into a subfolder like main/, and its package line is updated to match the folder (package main).
 
 This is done intentionally to keep the learning experience clean and prevent errors like multiple main() declarations.
 
@@ -56,7 +56,7 @@ Have a main() function as the entry point
 If you try to run a file without package main or without a main() function, you’ll get an error like:
 
 go run: cannot run non-main package
-💡 Then What is package basics, package utils, etc.?
+💡 Then What is package main, package utils, etc.?
 These are library-style packages — used for reusable code. They don’t need a main() function, and they’re not meant to be executed directly with go run.
 
 That’s why, in some lectures, I change the file from:
@@ -64,7 +64,7 @@ That’s why, in some lectures, I change the file from:
 package main
 to:
 
-package basics
+package main
 Before archiving or moving it — this tells Go, "Hey, this is not a program to run anymore."
 
 🛠️ Your Options
@@ -109,7 +109,7 @@ func showVariables() {
 This is good for practice and helps organize your code better.
 
 🤔 Why Do I Rename Files or Change the Package?
-When you see me renaming files or changing package main to package basics, it’s to avoid compilation errors. This way, I can keep the previous lecture’s code as a reference without Go thinking I’m trying to run multiple programs at once.
+When you see me renaming files or changing package main to package main, it’s to avoid compilation errors. This way, I can keep the previous lecture’s code as a reference without Go thinking I’m trying to run multiple programs at once.
 
 ⚠️ Important Rules to Remember
 ✅ Allowed                                                                             |                 ❌ Not Allowed
@@ -128,7 +128,7 @@ Archiving old .go files by changing package or extension |  Leaving many .go fil
 Q: Can I have multiple .go files with main()?
 A: Yes, but only if they’re in separate folders or packages.
 
-Q: Why change the package name to basics?
+Q: Why change the package name to main?
 A: To indicate that the file is now part of a library, not meant to be run.
 
 Q: Why does go run give an error after changing the package name?
@@ -141,9 +141,9 @@ A: Because it detects multiple main() functions or duplicate declarations.
 
 💡 Why I’m Only Changing the Package Name (Not the main() Function)
 
-You might have noticed that inside the basics, intermediate, and advanced folders, many files still have a main() function — and that’s completely okay. I don’t rename the main() function in those files because we’re not trying to run them directly while they’re sitting in those folders. Each of those folders is like a “storage area” for code examples we’ve already covered. If you tried to run any of those folders directly, you’d get an error — because Go doesn’t allow multiple files with main() functions in the same package (i.e., folder) to be compiled together.
+You might have noticed that inside the main, intermediate, and advanced folders, many files still have a main() function — and that’s completely okay. I don’t rename the main() function in those files because we’re not trying to run them directly while they’re sitting in those folders. Each of those folders is like a “storage area” for code examples we’ve already covered. If you tried to run any of those folders directly, you’d get an error — because Go doesn’t allow multiple files with main() functions in the same package (i.e., folder) to be compiled together.
 
-Instead of spending time removing or renaming every main() function, I simply change the package name to match the folder (package basics, package intermediate, etc.). That way, the files are still saved for reference, but Go won’t treat them as executable programs anymore — it will treat them like regular library code that’s not meant to be run directly.
+Instead of spending time removing or renaming every main() function, I simply change the package name to match the folder (package main, package intermediate, etc.). That way, the files are still saved for reference, but Go won’t treat them as executable programs anymore — it will treat them like regular library code that’s not meant to be run directly.
 
 Later, if you want to run any of those example files again, just move the file out into the main folder, rename its package to main, and make sure there’s no other file with a main() function in that folder. Then you can run it normally using:
 
