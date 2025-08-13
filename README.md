@@ -158,3 +158,24 @@ Stay curious, keep experimenting, and don’t worry — you’re doing great! �
 
 Happy coding!
 — Ashish
+
+-with the use this command we can make certificate 
+simple_api % openssl req -x509 -newkey rsa:2048 -nodes -keyout key.pem -out cert.pem -days 365
+
+...+..+.........+....+......+......+++++++++++++++++++++++++++++++++++++++*.....+++++++++++++++++++++++++++++++++++++++*....+......+...........+...+.........+.+......+......+.....+.......+..+.............+..+.+..............+.+............+........+...+.+......+.....+....+.........+......+.........+............+.....+...+.+.....+......+...+...................+.....+...+.......+........+...+......+.+..+.+............+...+.....+.......+........+......+.............+....................+.............+..+..........+..................+..+......+......+.+.....+....+........................+.........++++++
+..+.+..+...+.............+...........+..........+........+++++++++++++++++++++++++++++++++++++++*.+........+.........+....+..+.......+..+....+..+.......+.....+...+...+.......+........+......+.+++++++++++++++++++++++++++++++++++++++*.......+.......+..+.+..++++++
+-----
+You are about to be asked to enter information that will be incorporated
+into your certificate request.
+What you are about to enter is what is called a Distinguished Name or a DN.
+There are quite a few fields but you can leave some blank
+For some fields there will be a default value,
+If you enter '.', the field will be left blank.
+-----
+Country Name (2 letter code) [AU]:AU
+State or Province Name (full name) [Some-State]:Non Existent
+Locality Name (eg, city) []:Random
+Organization Name (eg, company) [Internet Widgits Pty Ltd]:API Inc
+Organizational Unit Name (eg, section) []:API Inc
+Common Name (e.g. server FQDN or YOUR name) []:API Inc
+Email Address []:test@test.com
