@@ -154,28 +154,362 @@ This setup helps us keep things clean, focused, and organized by topic, without 
 
 As we progress into the course and as you grow more comfortable, you’ll learn how to structure projects more professionally (and there is an exclusive coverage on this as well, later on), but right now, the goal is understanding Go fundamentals — not full-scale architecture.
 
-Stay curious, keep experimenting, and don’t worry — you’re doing great! 🚀
 
-Happy coding!
-— Ashish
+# Simple API Server with HTTP/2 and Mutual TLS (mTLS) in Go
 
--with the use this command we can make certificate 
-simple_api % openssl req -x509 -newkey rsa:2048 -nodes -keyout key.pem -out cert.pem -days 365
+This project is a **Go HTTP/2 API server** that uses **TLS** and **mutual TLS authentication (mTLS)** for secure communication between clients and the server.
 
-...+..+.........+....+......+......+++++++++++++++++++++++++++++++++++++++*.....+++++++++++++++++++++++++++++++++++++++*....+......+...........+...+.........+.+......+......+.....+.......+..+.............+..+.+..............+.+............+........+...+.+......+.....+....+.........+......+.........+............+.....+...+.+.....+......+...+...................+.....+...+.......+........+...+......+.+..+.+............+...+.....+.......+........+......+.............+....................+.............+..+..........+..................+..+......+......+.+.....+....+........................+.........++++++
-..+.+..+...+.............+...........+..........+........+++++++++++++++++++++++++++++++++++++++*.+........+.........+....+..+.......+..+....+..+.......+.....+...+...+.......+........+......+.+++++++++++++++++++++++++++++++++++++++*.......+.......+..+.+..++++++
------
-You are about to be asked to enter information that will be incorporated
-into your certificate request.
-What you are about to enter is what is called a Distinguished Name or a DN.
-There are quite a few fields but you can leave some blank
-For some fields there will be a default value,
-If you enter '.', the field will be left blank.
------
-Country Name (2 letter code) [AU]:AU
-State or Province Name (full name) [Some-State]:Non Existent
-Locality Name (eg, city) []:Random
-Organization Name (eg, company) [Internet Widgits Pty Ltd]:API Inc
-Organizational Unit Name (eg, section) []:API Inc
-Common Name (e.g. server FQDN or YOUR name) []:API Inc
-Email Address []:test@test.com
+It includes:
+
+* Two API endpoints: `/orders` and `/users`
+* TLS 1.2+ encryption
+* Client certificate validation (mTLS)
+* HTTP/2 support
+
+---
+
+## 📂 Project Structure
+
+```
+.
+├── server.go          # Main server code
+├── cert.pem           # Server certificate
+├── key.pem            # Server private key
+├── openssl.cnf        # OpenSSL configuration for certificate generation
+├── go.mod             # Go module definition
+├── go.sum             # Go dependencies
+```
+
+---
+
+## ⚙️ Prerequisites
+
+Make sure you have:
+
+* **Go** (>= 1.23.x) installed
+  [Download Go](https://go.dev/dl/)
+* **OpenSSL** installed
+  On macOS:
+
+  ```sh
+  brew install openssl
+  ```
+
+  On Ubuntu/Debian:
+
+  ```sh
+  sudo apt update && sudo apt install openssl
+  ```
+
+  On Windows:
+  [Download OpenSSL for Windows](https://slproweb.com/products/Win32OpenSSL.html)
+
+---
+
+## 🛠 Step 1: Clone the Project
+
+```sh
+git clone https://github.com/your-username/simple_api.git
+cd simple_api
+```
+
+---
+
+## 🔑 Step 2: Create TLS Certificates
+
+This server requires **server certificates** and a **client CA** for mTLS.
+You can either:
+
+* Use the provided `openssl.cnf` to create certificates, OR
+* Use a quick one-line OpenSSL command.
+
+### **Option 1: Using Configuration File**
+
+1. Create an OpenSSL config file (`openssl.cnf`) with this content:
+
+   ```ini
+   [req]
+   default_bits       = 2048
+   distinguished_name = req_distinguished_name
+   req_extensions     = req_ext
+   prompt             = no
+
+   [req_distinguished_name]
+   C  = US
+   ST = State
+   L  = City
+   O  = Organization
+   OU = Organizational Unit
+   CN = localhost
+
+   [req_ext]
+   subjectAltName = @alt_names
+
+   [alt_names]
+   DNS.1 = localhost
+   DNS.2 = 127.0.0.1
+   ```
+2. Generate server certificate and key:
+
+   ```sh
+   openssl req -x509 -nodes -days 365 \
+     -newkey rsa:2048 \
+     -keyout key.pem \
+     -out cert.pem \
+     -config openssl.cnf
+   ```
+
+### **Option 2: Quick Command**
+
+```sh
+openssl req -x509 -newkey rsa:2048 -nodes \
+  -keyout key.pem -out cert.pem -days 365
+```
+
+When prompted, enter details:
+
+```
+Country Name (2 letter code) [AU]: AU
+State or Province Name (full name) [Some-State]: Non Existent
+Locality Name (eg, city) []: Random
+Organization Name (eg, company) [Internet Widgits Pty Ltd]: API Inc
+Organizational Unit Name (eg, section) []: API Inc
+Common Name (e.g. server FQDN or YOUR name) []: API Inc
+Email Address []: test@test.com
+```
+
+---
+
+## 📜 Step 3: Install Dependencies
+
+```sh
+go mod tidy
+```
+
+---
+
+## 🚀 Step 4: Run the Server
+
+```sh
+go run server.go
+```
+
+You should see:
+
+```
+Server is running on port: 3000
+```
+
+---
+
+## 🌐 Step 5: Testing the Server
+
+Since the server enforces **mTLS**, clients must present a valid certificate signed by the CA.
+Example `curl` command:
+
+```sh
+curl --http2 -v https://localhost:3000/orders \
+  --cert client-cert.pem \
+  --key client-key.pem \
+  --cacert cert.pem
+```
+
+---
+
+## 📌 Important Notes about Go `main()` Functions
+
+This project has **only one** `main()` function in `server.go`.
+If you add more files, remember:
+
+* Only one `main()` per package
+* Keep different Go programs in separate folders to avoid `main redeclared` errors
+
+For details, see the [Go Bootcamp Notes](#) in this README for an explanation.
+
+Simple API with mTLS in Go
+This project demonstrates a simple Go HTTP server with mutual TLS (mTLS) authentication. The server exposes two endpoints, /orders and /users, and enforces mTLS to ensure secure communication. The server uses HTTP/2 and logs request details, including the HTTP version and TLS version.
+Prerequisites
+To run this project, ensure you have the following installed:
+
+Go: Version 1.23.3 or later
+OpenSSL: For generating TLS certificates
+Postman: For testing the API with mTLS
+curl: For testing via the terminal
+A modern web browser (e.g., Chrome) for testing
+
+Project Structure
+simple_api/
+├── cert.pem         # Server certificate
+├── key.pem         # Server private key
+├── server.go       # Main Go server code
+├── go.mod          # Go module file
+├── go.sum          # Go module dependencies checksum
+└── openssl.cnf     # OpenSSL configuration file
+
+Setup Instructions
+Step 1: Clone or Create the Project
+
+Create a directory for the project:mkdir simple_api
+cd simple_api
+
+
+Initialize a Go module:go mod init github.com/ankitakapadiya/simple_api
+
+
+Create or copy the server.go, go.mod, go.sum, and openssl.cnf files into the simple_api directory.
+
+Step 2: Install Dependencies
+Run the following command to download the required Go dependencies:
+go mod tidy
+
+This will install the golang.org/x/net package specified in go.mod.
+Step 3: Generate TLS Certificates
+The server requires a certificate (cert.pem) and private key (key.pem) for TLS. Follow these steps to generate them using OpenSSL:
+
+Ensure you have the openssl.cnf file in the project directory with the following content:
+[req]
+default_bits       = 2048
+distinguished_name = req_distinguished_name
+req_extensions     = req_ext
+prompt             = no
+
+[req_distinguished_name]
+C  = US
+ST = State
+L  = City
+O  = Organization
+OU = Organizational Unit
+CN = localhost
+
+[req_ext]
+subjectAltName = @alt_names
+
+[alt_names]
+DNS.1 = localhost
+DNS.2 = 127.0.0.1
+
+
+Generate the server certificate and key:
+openssl req -x509 -newkey rsa:2048 -nodes -keyout key.pem -out cert.pem -days 365 -config openssl.cnf
+
+
+This command creates a self-signed certificate valid for 365 days.
+The -nodes flag ensures the private key is not encrypted.
+The -config openssl.cnf flag uses the provided configuration to set localhost and 127.0.0.1 as valid domains.
+
+
+(Optional) Generate a client certificate for mTLS testing:
+openssl req -x509 -newkey rsa:2048 -nodes -keyout client-key.pem -out client-cert.pem -days 365 -config openssl.cnf
+
+
+This creates client-cert.pem and client-key.pem for testing mTLS.
+Use the same openssl.cnf to ensure compatibility with the server certificate.
+
+
+
+Step 4: Run the Server
+
+Ensure cert.pem and key.pem are in the simple_api directory.
+Start the server:go run server.go
+
+
+The server will run on https://localhost:3000.
+It listens for requests on /orders and /users endpoints.
+The server enforces mTLS, so clients must provide a valid certificate.
+
+
+
+Testing the API
+Testing with Postman
+Postman supports mTLS configuration for testing secure APIs. Follow these steps:
+
+Open Postman and create a new request.
+Set the request URL to:
+https://localhost:3000/orders or https://localhost:3000/users
+
+
+Configure mTLS in Postman:
+Go to Settings > Certificates tab.
+Click Add Certificate.
+Enter the following details:
+Host: localhost:3000
+CRT file: Select client-cert.pem
+KEY file: Select client-key.pem
+Passphrase: Leave blank (since -nodes was used).
+
+
+Click Add.
+
+
+Send the request:
+Method: GET
+URL: https://localhost:3000/orders
+You should receive a response: Handling incoming orders.
+Similarly, test https://localhost:3000/users to get Handling users.
+
+
+Troubleshooting:
+If you see a certificate error, ensure the client certificate is valid and matches the server's expected CA (cert.pem).
+Disable SSL certificate verification in Postman settings if you encounter issues with self-signed certificates:
+Go to Settings > General > Turn off SSL certificate verification.
+
+
+
+
+
+Testing in Chrome
+Browsers do not support mTLS natively, so you may encounter issues due to the self-signed certificate or mTLS requirements. To test in Chrome:
+
+Open Chrome and navigate to https://localhost:3000/orders.
+You may see a "Your connection is not private" warning due to the self-signed certificate.
+Click Advanced > Proceed to localhost (unsafe) to bypass the warning.
+Note: Chrome cannot provide a client certificate for mTLS, so the server will reject the request with a 400 Bad Request or similar error unless mTLS is disabled on the server (not recommended).
+For proper mTLS testing, use Postman or curl instead.
+
+Testing with curl in Terminal
+Use curl to test the API with mTLS:
+
+Run the following command to test the /orders endpoint:curl --cert client-cert.pem --key client-key.pem --cacert cert.pem https://localhost:3000/orders
+
+
+Expected output: Handling incoming orders
+
+
+Test the /users endpoint:curl --cert client-cert.pem --key client-key.pem --cacert cert.pem https://localhost:3000/users
+
+
+Expected output: Handling users
+
+
+Troubleshooting:
+If you get a curl: (60) SSL certificate problem, ensure the --cacert cert.pem flag is used to trust the server's self-signed certificate.
+If mTLS fails, verify that client-cert.pem and client-key.pem are valid and match the server's CA (cert.pem).
+
+
+
+Endpoints
+
+GET /orders: Returns Handling incoming orders.
+GET /users: Returns Handling users.
+
+Notes
+
+The server uses HTTP/2 and requires TLS 1.2 or higher.
+mTLS is enforced, so all clients must provide a valid client certificate signed by the CA in cert.pem.
+Logs in the server console display the HTTP version and TLS version of incoming requests.
+For production, replace self-signed certificates with ones issued by a trusted CA.
+
+Troubleshooting
+
+"main redeclared" error: Ensure only one main() function exists in the package main. If you have multiple .go files with main() functions in the same directory, move them to separate directories or rename them (e.g., to .txt).
+Certificate errors: Verify that cert.pem, key.pem, client-cert.pem, and client-key.pem are in the project directory and correctly referenced.
+Port conflict: If port 3000 is in use, change the port variable in server.go to another value (e.g., 8080).
+
+Learning Resources
+
+Go Documentation
+OpenSSL Documentation
+Postman mTLS Guide
+HTTP/2 in Go
+
+Happy coding! 🚀
