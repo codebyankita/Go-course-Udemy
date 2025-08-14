@@ -1,6 +1,8 @@
+// SPDX-License-Identifier: MIT
 package main
 
 import (
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -8,43 +10,27 @@ import (
 	"net/http"
 )
 
-// Struct for JSON parsing
-type User struct {
+// -------------------- Struct --------------------
+type user struct {
 	Name string `json:"name"`
 	Age  string `json:"age"`
 	City string `json:"city"`
 }
 
-func main() {
-	port := ":3000"
+// -------------------- Handlers --------------------
+func rootHandler(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte("Hello Root Route"))
+}
 
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Hello Root Route"))
-		fmt.Println("Hello Root Route")
-	})
+// Teachers Handler
+func teachersHandler(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case http.MethodGet:
+		w.Write([]byte("Hello GET Method on Teachers Route"))
+		fmt.Println("Hello GET Method on Teachers Route")
 
-	http.HandleFunc("/teachers", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Println("----- Incoming Request -----")
-		fmt.Println("Method:", r.Method)
-
-		// Parse form data (necessary for x-www-form-urlencoded)
-		err := r.ParseForm()
-		if err != nil {
-			http.Error(w, "Error parsing form", http.StatusBadRequest)
-			return
-		}
-		fmt.Println("Form:", r.Form)
-
-		// Prepare response data from form
-		response := make(map[string]interface{})
-		for key, value := range r.Form {
-			response[key] = value[0]
-		}
-		if len(response) > 0 {
-			fmt.Println("Processed Form Map:", response)
-		}
-
-		// --- RAW Body parsing ---
+	case http.MethodPost:
+		// Read RAW Body
 		body, err := io.ReadAll(r.Body)
 		if err != nil {
 			http.Error(w, "Error reading body", http.StatusBadRequest)
@@ -52,93 +38,100 @@ func main() {
 		}
 		defer r.Body.Close()
 
-		fmt.Println("RAW Body (string):", string(body))
+		fmt.Println("RAW Body:", string(body))
 
-		// If expecting JSON -> unmarshal into struct
-		var userInstance User
-		if len(body) > 0 {
-			err = json.Unmarshal(body, &userInstance)
-			if err == nil {
-				fmt.Println("Unmarshaled JSON into User struct:", userInstance)
-				fmt.Println("Received user name as:", userInstance.Name)
-			} else {
-				fmt.Println("Error unmarshaling into struct:", err)
-			}
+		// Parse JSON
+		var userInstance user
+		err = json.Unmarshal(body, &userInstance)
+		if err != nil {
+			http.Error(w, "Invalid JSON", http.StatusBadRequest)
+			return
 		}
 
-		// Unmarshal JSON into map as well
-		response1 := make(map[string]interface{})
-		if len(body) > 0 {
-			err = json.Unmarshal(body, &response1)
-			if err == nil {
-				fmt.Println("Unmarshaled JSON into a map:", response1)
-			} else {
-				fmt.Println("Error unmarshaling into map:", err)
-			}
-		}
+		fmt.Println("Parsed JSON:", userInstance)
 
-		// Log request details
-		fmt.Println("Request Details:")
-		fmt.Println("Form:", r.Form)
-		fmt.Println("Header:", r.Header)
-		fmt.Println("ContentLength:", r.ContentLength)
-		fmt.Println("Host:", r.Host)
-		fmt.Println("Protocol:", r.Proto)
-		fmt.Println("RemoteAddr:", r.RemoteAddr)
-		fmt.Println("RequestURI:", r.RequestURI)
-		fmt.Println("TLS:", r.TLS)
-		fmt.Println("Trailer:", r.Trailer)
-		fmt.Println("TransferEncoding:", r.TransferEncoding)
-		fmt.Println("URL:", r.URL)
-		fmt.Println("UserAgent:", r.UserAgent())
-		fmt.Println("Port:", r.URL.Port())
-		fmt.Println("URL Scheme:", r.URL.Scheme)
-
-		fmt.Println("-----------------------------")
-
-		// Respond with JSON
+		// Respond back in JSON
 		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"message": "Teacher created successfully",
+			"user":    userInstance,
+		})
 
-		switch r.Method {
-		case http.MethodGet:
-			json.NewEncoder(w).Encode(map[string]string{"message": "Hello GET Method on Teachers Route"})
+	case http.MethodPut:
+		w.Write([]byte("Hello PUT Method on Teachers Route"))
+		fmt.Println("Hello PUT Method on Teachers Route")
 
-		case http.MethodPost:
-			if len(response1) > 0 {
-				json.NewEncoder(w).Encode(response1)
-			} else if (userInstance != User{}) {
-				json.NewEncoder(w).Encode(userInstance)
-			} else {
-				json.NewEncoder(w).Encode(map[string]string{"message": "Hello POST Method on Teachers Route"})
-			}
+	case http.MethodPatch:
+		w.Write([]byte("Hello PATCH Method on Teachers Route"))
+		fmt.Println("Hello PATCH Method on Teachers Route")
 
-		case http.MethodPut:
-			json.NewEncoder(w).Encode(map[string]string{"message": "Hello PUT Method on Teachers Route"})
+	case http.MethodDelete:
+		w.Write([]byte("Hello DELETE Method on Teachers Route"))
+		fmt.Println("Hello DELETE Method on Teachers Route")
+	}
+}
 
-		case http.MethodPatch:
-			json.NewEncoder(w).Encode(map[string]string{"message": "Hello PATCH Method on Teachers Route"})
+// Students Handler
+func studentsHandler(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case http.MethodGet:
+		w.Write([]byte("Hello GET Method on Students Route"))
+		fmt.Println("Hello GET Method on Students Route")
 
-		case http.MethodDelete:
-			json.NewEncoder(w).Encode(map[string]string{"message": "Hello DELETE Method on Teachers Route"})
+	case http.MethodPost:
+		w.Write([]byte("Hello POST Method on Students Route"))
+		fmt.Println("Hello POST Method on Students Route")
 
-		default:
-			http.Error(w, `{"error":"Method Not Allowed"}`, http.StatusMethodNotAllowed)
-		}
-	})
+	case http.MethodPut:
+		w.Write([]byte("Hello PUT Method on Students Route"))
+		fmt.Println("Hello PUT Method on Students Route")
 
-	http.HandleFunc("/students", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Hello Students Route"))
-		fmt.Println("Hello Students Route")
-	})
+	case http.MethodPatch:
+		w.Write([]byte("Hello PATCH Method on Students Route"))
+		fmt.Println("Hello PATCH Method on Students Route")
 
-	http.HandleFunc("/execs", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Hello execs Route"))
-		fmt.Println("Hello execs Route")
-	})
+	case http.MethodDelete:
+		w.Write([]byte("Hello DELETE Method on Students Route"))
+		fmt.Println("Hello DELETE Method on Students Route")
+	}
+}
 
-	fmt.Println("Server is running on port", port)
-	err := http.ListenAndServe(port, nil)
+// Execs Handler (dummy example)
+func execsHandler(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte("Hello from Execs Route"))
+	fmt.Println("Hello Execs Route")
+}
+
+// -------------------- Main --------------------
+func main() {
+	port := ":3000"
+	cert := "cert.pem"
+	key := "key.pem"
+
+	// Create a new ServeMux
+	mux := http.NewServeMux()
+	mux.HandleFunc("/", rootHandler)
+	mux.HandleFunc("/teachers/", teachersHandler)
+	mux.HandleFunc("/students/", studentsHandler)
+	mux.HandleFunc("/execs/", execsHandler)
+
+	// TLS configuration
+	tlsConfig := &tls.Config{
+		MinVersion: tls.VersionTLS12,
+	}
+
+	// Create custom HTTPS server
+	server := &http.Server{
+		Addr:      port,
+		Handler:   mux,
+		TLSConfig: tlsConfig,
+	}
+
+	fmt.Println("✅ Server is running on https://localhost" + port)
+
+	// Start HTTPS server with TLS cert & key
+	err := server.ListenAndServeTLS(cert, key)
 	if err != nil {
-		log.Fatalln("Error starting the server:", err)
+		log.Fatalln("❌ Error starting the TLS server:", err)
 	}
 }
