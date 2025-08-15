@@ -8,6 +8,8 @@ import (
 	"io"
 	"log"
 	"net/http"
+
+	mw "restapi/internal/api/middlewares"
 )
 
 // -------------------- Struct --------------------
@@ -22,15 +24,12 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Hello Root Route"))
 }
 
-// Teachers Handler
 func teachersHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
 		w.Write([]byte("Hello GET Method on Teachers Route"))
-		fmt.Println("Hello GET Method on Teachers Route")
 
 	case http.MethodPost:
-		// Read RAW Body
 		body, err := io.ReadAll(r.Body)
 		if err != nil {
 			http.Error(w, "Error reading body", http.StatusBadRequest)
@@ -38,9 +37,6 @@ func teachersHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		defer r.Body.Close()
 
-		fmt.Println("RAW Body:", string(body))
-
-		// Parse JSON
 		var userInstance user
 		err = json.Unmarshal(body, &userInstance)
 		if err != nil {
@@ -48,58 +44,23 @@ func teachersHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		fmt.Println("Parsed JSON:", userInstance)
-
-		// Respond back in JSON
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(map[string]interface{}{
 			"message": "Teacher created successfully",
 			"user":    userInstance,
 		})
 
-	case http.MethodPut:
-		w.Write([]byte("Hello PUT Method on Teachers Route"))
-		fmt.Println("Hello PUT Method on Teachers Route")
-
-	case http.MethodPatch:
-		w.Write([]byte("Hello PATCH Method on Teachers Route"))
-		fmt.Println("Hello PATCH Method on Teachers Route")
-
-	case http.MethodDelete:
-		w.Write([]byte("Hello DELETE Method on Teachers Route"))
-		fmt.Println("Hello DELETE Method on Teachers Route")
+	default:
+		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
 	}
 }
 
-// Students Handler
 func studentsHandler(w http.ResponseWriter, r *http.Request) {
-	switch r.Method {
-	case http.MethodGet:
-		w.Write([]byte("Hello GET Method on Students Route"))
-		fmt.Println("Hello GET Method on Students Route")
-
-	case http.MethodPost:
-		w.Write([]byte("Hello POST Method on Students Route"))
-		fmt.Println("Hello POST Method on Students Route")
-
-	case http.MethodPut:
-		w.Write([]byte("Hello PUT Method on Students Route"))
-		fmt.Println("Hello PUT Method on Students Route")
-
-	case http.MethodPatch:
-		w.Write([]byte("Hello PATCH Method on Students Route"))
-		fmt.Println("Hello PATCH Method on Students Route")
-
-	case http.MethodDelete:
-		w.Write([]byte("Hello DELETE Method on Students Route"))
-		fmt.Println("Hello DELETE Method on Students Route")
-	}
+	w.Write([]byte("Hello Students Route"))
 }
 
-// Execs Handler (dummy example)
 func execsHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Hello from Execs Route"))
-	fmt.Println("Hello Execs Route")
 }
 
 // -------------------- Main --------------------
@@ -108,30 +69,32 @@ func main() {
 	cert := "cert.pem"
 	key := "key.pem"
 
-	// Create a new ServeMux
+	// Mux
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", rootHandler)
 	mux.HandleFunc("/teachers/", teachersHandler)
 	mux.HandleFunc("/students/", studentsHandler)
 	mux.HandleFunc("/execs/", execsHandler)
 
-	// TLS configuration
-	tlsConfig := &tls.Config{
-		MinVersion: tls.VersionTLS12,
-	}
+	// Wrap middlewares in correct order
+	handler := mw.ResponseTimeMiddleware(
+		mw.SecurityHeaders(
+			mw.Cors(mux),
+		),
+	)
 
-	// Create custom HTTPS server
+	// TLS Config
+	tlsConfig := &tls.Config{MinVersion: tls.VersionTLS12}
+
 	server := &http.Server{
 		Addr:      port,
-		Handler:   mux,
+		Handler:   handler,
 		TLSConfig: tlsConfig,
 	}
 
 	fmt.Println("✅ Server is running on https://localhost" + port)
 
-	// Start HTTPS server with TLS cert & key
-	err := server.ListenAndServeTLS(cert, key)
-	if err != nil {
+	if err := server.ListenAndServeTLS(cert, key); err != nil {
 		log.Fatalln("❌ Error starting the TLS server:", err)
 	}
 }
