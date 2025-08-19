@@ -3,98 +3,187 @@ package main
 
 import (
 	"crypto/tls"
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
+	"strconv"
 
-	mw "restapi/internal/api/middlewares"
+"restapi/internal/repository/sqlconnect"
 )
 
-// -------------------- Struct --------------------
-type user struct {
-	Name string `json:"name"`
-	Age  string `json:"age"`
-	City string `json:"city"`
+type Teacher struct {
+	ID        int    `json:"id"`
+	FirstName string `json:"first_name"`
+	LastName  string `json:"last_name"`
+	Class     string `json:"class"`
+	Subject   string `json:"subject"`
 }
 
-// -------------------- Handlers --------------------
-func rootHandler(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Hello Root Route"))
-}
+var dbConn = initDB()
 
-func teachersHandler(w http.ResponseWriter, r *http.Request) {
-	switch r.Method {
-	case http.MethodGet:
-		w.Write([]byte("Hello GET Method on Teachers Route"))
-
-	case http.MethodPost:
-		body, err := io.ReadAll(r.Body)
-		if err != nil {
-			http.Error(w, "Error reading body", http.StatusBadRequest)
-			return
-		}
-		defer r.Body.Close()
-
-		var userInstance user
-		err = json.Unmarshal(body, &userInstance)
-		if err != nil {
-			http.Error(w, "Invalid JSON", http.StatusBadRequest)
-			return
-		}
-
-		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(map[string]interface{}{
-			"message": "Teacher created successfully",
-			"user":    userInstance,
-		})
-
-	default:
-		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+func initDB() *sql.DB {
+	db, err := sqlconnect.ConnectDb()
+	if err != nil {
+		log.Fatal("❌ Error connecting to DB: ", err)
 	}
+	fmt.Println("✅ Connected to MariaDB/MySQL")
+	return db
 }
 
-func studentsHandler(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Hello Students Route"))
-}
+// ------------------ Handlers ------------------
 
-func execsHandler(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Hello from Execs Route"))
-}
+// Create Teacher
+func createTeacherHandler(w http.ResponseWriter, r *http.Request) {
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, "Error reading body", http.StatusBadRequest)
+		return
+	}
+	defer r.Body.Close()
 
-// -------------------- Main --------------------
-func main() {
-	port := ":3000"
-	cert := "cert.pem"
-	key := "key.pem"
+	var t Teacher
+	if err := json.Unmarshal(body, &t); err != nil {
+		http.Error(w, "Invalid JSON", http.StatusBadRequest)
+		return
+	}
 
-	// Mux
-	mux := http.NewServeMux()
-	mux.HandleFunc("/", rootHandler)
-	mux.HandleFunc("/teachers/", teachersHandler)
-	mux.HandleFunc("/students/", studentsHandler)
-	mux.HandleFunc("/execs/", execsHandler)
-
-	// Wrap middlewares in correct order
-	handler := mw.ResponseTimeMiddleware(
-		mw.SecurityHeaders(
-			mw.Cors(mux),
-		),
+	result, err := dbConn.Exec(
+		"INSERT INTO teachers (first_name, last_name, class, subject) VALUES (?, ?, ?, ?)",
+		t.FirstName, t.LastName, t.Class, t.Subject,
 	)
+	if err != nil {
+		http.Error(w, "Error inserting teacher", http.StatusInternalServerError)
+		return
+	}
 
-	// TLS Config
-	tlsConfig := &tls.Config{MinVersion: tls.VersionTLS12}
+	id, _ := result.LastInsertId()
+	t.ID = int(id)
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"message": "Teacher created successfully",
+		"teacher": t,
+	})
+}
+
+// Get All Teachers
+func getTeachersHandler(w http.ResponseWriter, r *http.Request) {
+	rows, err := dbConn.Query("SELECT id, first_name, last_name, class, subject FROM teachers")
+	if err != nil {
+		http.Error(w, "Error fetching teachers", http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+
+	teachers := []Teacher{}
+	for rows.Next() {
+		var t Teacher
+		if err := rows.Scan(&t.ID, &t.FirstName, &t.LastName, &t.Class, &t.Subject); err != nil {
+			http.Error(w, "Error scanning teacher", http.StatusInternalServerError)
+			return
+		}
+		teachers = append(teachers, t)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(teachers)
+}
+
+// Update Teacher by ID
+func updateTeacherHandler(w http.ResponseWriter, r *http.Request) {
+	idStr := r.URL.Query().Get("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
+		return
+	}
+
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, "Error reading body", http.StatusBadRequest)
+		return
+	}
+	defer r.Body.Close()
+
+	var t Teacher
+	if err := json.Unmarshal(body, &t); err != nil {
+		http.Error(w, "Invalid JSON", http.StatusBadRequest)
+		return
+	}
+
+	_, err = dbConn.Exec(
+		"UPDATE teachers SET first_name=?, last_name=?, class=?, subject=? WHERE id=?",
+		t.FirstName, t.LastName, t.Class, t.Subject, id,
+	)
+	if err != nil {
+		http.Error(w, "Error updating teacher", http.StatusInternalServerError)
+		return
+	}
+
+	t.ID = id
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"message": "Teacher updated successfully",
+		"teacher": t,
+	})
+}
+
+// Delete Teacher by ID
+func deleteTeacherHandler(w http.ResponseWriter, r *http.Request) {
+	idStr := r.URL.Query().Get("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
+		return
+	}
+
+	_, err = dbConn.Exec("DELETE FROM teachers WHERE id=?", id)
+	if err != nil {
+		http.Error(w, "Error deleting teacher", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"message": fmt.Sprintf("Teacher with ID %d deleted successfully", id),
+	})
+}
+
+// ------------------ Server ------------------
+
+func main() {
+	defer dbConn.Close()
+
+	mux := http.NewServeMux()
+	mux.HandleFunc("/teachers", func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodGet:
+			getTeachersHandler(w, r)
+		case http.MethodPost:
+			createTeacherHandler(w, r)
+		case http.MethodPut:
+			updateTeacherHandler(w, r)
+		case http.MethodDelete:
+			deleteTeacherHandler(w, r)
+		default:
+			http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		}
+	})
 
 	server := &http.Server{
-		Addr:      port,
-		Handler:   handler,
-		TLSConfig: tlsConfig,
+		Addr:    ":3000",
+		Handler: mux,
+		TLSConfig: &tls.Config{
+			MinVersion: tls.VersionTLS12,
+		},
 	}
 
-	fmt.Println("✅ Server is running on https://localhost" + port)
-
-	if err := server.ListenAndServeTLS(cert, key); err != nil {
-		log.Fatalln("❌ Error starting the TLS server:", err)
+	fmt.Println("🚀 HTTPS server started on https://localhost:3000")
+	err := server.ListenAndServeTLS("cert.pem", "key.pem")
+	if err != nil {
+		log.Fatal("❌ Server failed:", err)
 	}
 }
