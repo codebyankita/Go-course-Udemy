@@ -1,189 +1,108 @@
-// SPDX-License-Identifier: MIT
 package main
 
 import (
 	"crypto/tls"
-	"database/sql"
-	"encoding/json"
+	"embed"
 	"fmt"
-	"io"
 	"log"
 	"net/http"
-	"strconv"
+	"os"
+	mw "restapi/internal/api/middlewares"
+	"restapi/internal/api/router"
+	"restapi/pkg/utils"
 
-"restapi/internal/repository/sqlconnect"
+	"github.com/joho/godotenv"
 )
 
-type Teacher struct {
-	ID        int    `json:"id"`
-	FirstName string `json:"first_name"`
-	LastName  string `json:"last_name"`
-	Class     string `json:"class"`
-	Subject   string `json:"subject"`
+//go:embed .env
+var envFile embed.FS
+
+func loadEnvFromEmbeddedFile() {
+	// Read the embedded .env file
+	content, err := envFile.ReadFile(".env")
+	if err != nil {
+		log.Fatalf("Error reading .env file: %v", err)
+	}
+
+	// Create a temp file to load the env vars
+	tempfile, err := os.CreateTemp("", ".env")
+	if err != nil {
+		log.Fatalf("Error creating temp .env file: %v", err)
+	}
+	defer os.Remove(tempfile.Name())
+
+	// Write content of the embedded .env file to the time file
+	_, err = tempfile.Write(content)
+	if err != nil {
+		log.Fatalf("Error writing to temp .env file: %v", err)
+	}
+
+	err = tempfile.Close()
+	if err != nil {
+		log.Fatalf("Error closing temp file: %v", err)
+	}
+
+	// Load env vars from the temp file
+	err = godotenv.Load(tempfile.Name())
+	if err != nil {
+		log.Fatalf("Error loading .env file: %v", err)
+	}
 }
-
-var dbConn = initDB()
-
-func initDB() *sql.DB {
-	db, err := sqlconnect.ConnectDb()
-	if err != nil {
-		log.Fatal("❌ Error connecting to DB: ", err)
-	}
-	fmt.Println("✅ Connected to MariaDB/MySQL")
-	return db
-}
-
-// ------------------ Handlers ------------------
-
-// Create Teacher
-func createTeacherHandler(w http.ResponseWriter, r *http.Request) {
-	body, err := io.ReadAll(r.Body)
-	if err != nil {
-		http.Error(w, "Error reading body", http.StatusBadRequest)
-		return
-	}
-	defer r.Body.Close()
-
-	var t Teacher
-	if err := json.Unmarshal(body, &t); err != nil {
-		http.Error(w, "Invalid JSON", http.StatusBadRequest)
-		return
-	}
-
-	result, err := dbConn.Exec(
-		"INSERT INTO teachers (first_name, last_name, class, subject) VALUES (?, ?, ?, ?)",
-		t.FirstName, t.LastName, t.Class, t.Subject,
-	)
-	if err != nil {
-		http.Error(w, "Error inserting teacher", http.StatusInternalServerError)
-		return
-	}
-
-	id, _ := result.LastInsertId()
-	t.ID = int(id)
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]interface{}{
-		"message": "Teacher created successfully",
-		"teacher": t,
-	})
-}
-
-// Get All Teachers
-func getTeachersHandler(w http.ResponseWriter, r *http.Request) {
-	rows, err := dbConn.Query("SELECT id, first_name, last_name, class, subject FROM teachers")
-	if err != nil {
-		http.Error(w, "Error fetching teachers", http.StatusInternalServerError)
-		return
-	}
-	defer rows.Close()
-
-	teachers := []Teacher{}
-	for rows.Next() {
-		var t Teacher
-		if err := rows.Scan(&t.ID, &t.FirstName, &t.LastName, &t.Class, &t.Subject); err != nil {
-			http.Error(w, "Error scanning teacher", http.StatusInternalServerError)
-			return
-		}
-		teachers = append(teachers, t)
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(teachers)
-}
-
-// Update Teacher by ID
-func updateTeacherHandler(w http.ResponseWriter, r *http.Request) {
-	idStr := r.URL.Query().Get("id")
-	id, err := strconv.Atoi(idStr)
-	if err != nil {
-		http.Error(w, "Invalid ID", http.StatusBadRequest)
-		return
-	}
-
-	body, err := io.ReadAll(r.Body)
-	if err != nil {
-		http.Error(w, "Error reading body", http.StatusBadRequest)
-		return
-	}
-	defer r.Body.Close()
-
-	var t Teacher
-	if err := json.Unmarshal(body, &t); err != nil {
-		http.Error(w, "Invalid JSON", http.StatusBadRequest)
-		return
-	}
-
-	_, err = dbConn.Exec(
-		"UPDATE teachers SET first_name=?, last_name=?, class=?, subject=? WHERE id=?",
-		t.FirstName, t.LastName, t.Class, t.Subject, id,
-	)
-	if err != nil {
-		http.Error(w, "Error updating teacher", http.StatusInternalServerError)
-		return
-	}
-
-	t.ID = id
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]interface{}{
-		"message": "Teacher updated successfully",
-		"teacher": t,
-	})
-}
-
-// Delete Teacher by ID
-func deleteTeacherHandler(w http.ResponseWriter, r *http.Request) {
-	idStr := r.URL.Query().Get("id")
-	id, err := strconv.Atoi(idStr)
-	if err != nil {
-		http.Error(w, "Invalid ID", http.StatusBadRequest)
-		return
-	}
-
-	_, err = dbConn.Exec("DELETE FROM teachers WHERE id=?", id)
-	if err != nil {
-		http.Error(w, "Error deleting teacher", http.StatusInternalServerError)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]interface{}{
-		"message": fmt.Sprintf("Teacher with ID %d deleted successfully", id),
-	})
-}
-
-// ------------------ Server ------------------
 
 func main() {
-	defer dbConn.Close()
+	// Only in production, for running source code
+	// err := godotenv.Load()
+	// if err != nil {
+	// 	return
+	// }
 
-	mux := http.NewServeMux()
-	mux.HandleFunc("/teachers", func(w http.ResponseWriter, r *http.Request) {
-		switch r.Method {
-		case http.MethodGet:
-			getTeachersHandler(w, r)
-		case http.MethodPost:
-			createTeacherHandler(w, r)
-		case http.MethodPut:
-			updateTeacherHandler(w, r)
-		case http.MethodDelete:
-			deleteTeacherHandler(w, r)
-		default:
-			http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
-		}
-	})
+	// Load environment variables from the embedded .env file
+	loadEnvFromEmbeddedFile()
 
+	// fmt.Println("Environment variable CERT_FILE:", os.Getenv("CERT_FILE"))
+
+	port := os.Getenv("API_PORT")
+
+	// cert := "cert.pem"
+	// key := "key.pem"
+
+	cert := os.Getenv("CERT_FILE")
+	key := os.Getenv("KEY_FILE")
+
+	tlsConfig := &tls.Config{
+		MinVersion: tls.VersionTLS10,
+	}
+
+	// rl := mw.NewRateLimiter(5, time.Minute)
+
+	hppOptions := mw.HPPOptions{
+		CheckQuery:                  true,
+		CheckBody:                   true,
+		CheckBodyOnlyForContentType: "application/x-www-form-urlencoded",
+		Whitelist:                   []string{"sortBy", "sortOrder", "name", "age", "class"},
+	}
+
+	// secureMux := mw.Cors(rl.Middleware(mw.ResponseTimeMiddleware(mw.SecurityHeaders(mw.Compression(mw.Hpp(hppOptions)(mux))))))
+	// secureMux := jwtMiddleware(mw.SecurityHeaders(router))
+	// secureMux := (mw.SecurityHeaders(router))
+	// secureMux := mw.XSSMiddleware(router)
+	router := router.MainRouter()
+	jwtMiddleware := mw.MiddlewaresExcludePaths(mw.JWTMiddleware, "/execs/login", "/execs/forgotpassword", "/execs/resetpassword/reset")
+	// secureMux := utils.ApplyMiddlewares(router, mw.SecurityHeaders, mw.Compression, mw.Hpp(hppOptions), mw.XSSMiddleware, jwtMiddleware, mw.ResponseTimeMiddleware, rl.Middleware, mw.Cors)
+	secureMux := utils.ApplyMiddlewares(router, mw.SecurityHeaders, mw.Compression, mw.Hpp(hppOptions), mw.XSSMiddleware, jwtMiddleware, mw.ResponseTimeMiddleware, mw.Cors)
+
+	// Create custom server
 	server := &http.Server{
-		Addr:    ":3000",
-		Handler: mux,
-		TLSConfig: &tls.Config{
-			MinVersion: tls.VersionTLS12,
-		},
+		Addr: port,
+		// Handler: mux,
+		Handler:   secureMux,
+		TLSConfig: tlsConfig,
 	}
 
-	fmt.Println("🚀 HTTPS server started on https://localhost:3000")
-	err := server.ListenAndServeTLS("cert.pem", "key.pem")
+	fmt.Println("Server is running on port: ", port)
+	err := server.ListenAndServeTLS(cert, key)
 	if err != nil {
-		log.Fatal("❌ Server failed:", err)
+		log.Fatalln("Error starting the server", err)
 	}
+
 }
