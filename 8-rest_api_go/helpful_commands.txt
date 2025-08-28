@@ -8,3 +8,10 @@ h2load --h1 -n 1000 -c 100 -m 10 -D 20s -H "Cookie: Bearer=eyJhbGciOiJIUzI1NiIsI
 h2load -n 1000 -c 100 -m 10 -D 20s -H "Cookie: Bearer=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MjQ3NTgwODYsInJvbGUiOiJhZG1pbiIsInVpZCI6MTIsInVzZXIiOiJhbGljZS5zbWl0aCJ9.eG8AdOqsz9G9XcxOda1VH-w-y-0-DCtJnouiAJIFkS4" -H "Origin: https://localhost:3000" 'https://localhost:3000/students?page=1&limit=300' && echo "OBF_HTTP_TLS_WITH_MDLWRS"
 
 h2load -n 1000 -c 100 -m 10 -D 20s -H "Cookie: Bearer=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MjQ3NTgwODYsInJvbGUiOiJhZG1pbiIsInVpZCI6MTIsInVzZXIiOiJhbGljZS5zbWl0aCJ9.eG8AdOqsz9G9XcxOda1VH-w-y-0-DCtJnouiAJIFkS4" -H "Origin: https://localhost:3000" 'https://localhost:3000/students?page=1&limit=300' && echo "SOURCE-CODE_HTTP2_TLS_WITH_MDLWRS"
+
+
+ go build -o rest_api server.go
+  GOOS=darwin GOARCH=arm64 go build -o rest_api_macos_arm64 server.go
+  ./rest_api
+
+  garble build -o rest_api_TLS_With_Mdlwars server.go
