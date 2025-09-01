@@ -13,7 +13,6 @@ require (
 	github.com/go-mail/mail/v2 v2.3.0 // indirect
 	github.com/golang-jwt/jwt/v5 v5.2.1 // indirect
 	github.com/gorilla/css v1.0.1 // indirect
-	github.com/gorilla/mux v1.8.1 // indirect
 	github.com/microcosm-cc/bluemonday v1.0.27 // indirect
 	golang.org/x/crypto v0.26.0 // indirect
 	golang.org/x/net v0.26.0 // indirect

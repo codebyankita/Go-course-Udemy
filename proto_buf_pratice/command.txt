@@ -1,0 +1,52 @@
+
+
+1. **Basic compile inside `proto/` folder**
+
+```bash
+cd proto
+protoc --go_out=. main.proto
+cd ..
+```
+
+2. **Compile from root directory with path**
+
+```bash
+protoc --go_out=. ./proto/main.proto
+```
+
+3. **When you have nested `.proto` files (e.g., `user/user.proto`, `order.proto`)**
+
+```bash
+protoc -I=proto --go_out=. proto/main.proto proto/user/user.proto proto/order.proto
+```
+
+* `-I=proto` tells `protoc` where to look for imports.
+* This is the **standard way** if you have multiple `.proto` files.
+
+---
+
+### ❌ Mistakes / Duplicates You Had
+
+* `protoc --go_out=. ./proto/ main.proto` → ❌ wrong (extra space, path invalid).
+* `protoc --go_out=. ./proto/main.proto` → ✅ correct (but duplicate).
+* `protoc -I=proto --go_out=. proto/main.proto/user/user.proto` → ❌ wrong (looks like a directory path mistake, should be `proto/user/user.proto`).
+* Repeated commands (you listed them multiple times).
+
+---
+
+### 📌 Final Clean List (Keep These)
+
+```bash
+# From inside proto/ folder
+cd proto
+protoc --go_out=. main.proto
+cd ..
+
+# From project root
+protoc --go_out=. ./proto/main.proto
+
+# With multiple .proto files
+protoc -I=proto --go_out=. proto/main.proto proto/user/user.proto proto/order.proto
+```
+
+

@@ -59,7 +59,7 @@ func main() {
 	// Load environment variables from the embedded .env file
 	loadEnvFromEmbeddedFile()
 
-	fmt.Println("Environment variable CERT_FILE:", os.Getenv("CERT_FILE"))
+	// fmt.Println("Environment variable CERT_FILE:", os.Getenv("CERT_FILE"))
 
 	port := os.Getenv("API_PORT")
 
