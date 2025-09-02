@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-// import "greeter.proto";
+import "greeter.proto";
 // import "farewell/farewell.proto";
 
 package calculator;
@@ -11,10 +11,10 @@ service Calculate {
     rpc Add (AddRequest) returns (AddResponse);
 }
 
-// service Greeter {
-//     rpc Greet (HelloRequest) returns (HelloResponse);
-//     rpc Add (HelloRequest) returns (HelloResponse);
-// }
+service Greeter {
+    rpc Greet (HelloRequest) returns (HelloResponse);
+    // rpc Add (HelloRequest) returns (HelloResponse);
+}
 
 // service BidFarewell {
 //     rpc BidGoodBye(farewell.GoodByeRequest) returns (farewell.GoodByeResponse);

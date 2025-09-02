@@ -2,7 +2,7 @@
 // versions:
 // 	protoc-gen-go v1.36.8
 // 	protoc        v6.32.0
-// source: proto/main.proto
+// source: main.proto
 
 // import "greeter.proto";
 // import "farewell/farewell.proto";
@@ -34,7 +34,7 @@ type AddRequest struct {
 
 func (x *AddRequest) Reset() {
 	*x = AddRequest{}
-	mi := &file_proto_main_proto_msgTypes[0]
+	mi := &file_main_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -46,7 +46,7 @@ func (x *AddRequest) String() string {
 func (*AddRequest) ProtoMessage() {}
 
 func (x *AddRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_main_proto_msgTypes[0]
+	mi := &file_main_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -59,7 +59,7 @@ func (x *AddRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AddRequest.ProtoReflect.Descriptor instead.
 func (*AddRequest) Descriptor() ([]byte, []int) {
-	return file_proto_main_proto_rawDescGZIP(), []int{0}
+	return file_main_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *AddRequest) GetA() int32 {
@@ -85,7 +85,7 @@ type AddResponse struct {
 
 func (x *AddResponse) Reset() {
 	*x = AddResponse{}
-	mi := &file_proto_main_proto_msgTypes[1]
+	mi := &file_main_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -97,7 +97,7 @@ func (x *AddResponse) String() string {
 func (*AddResponse) ProtoMessage() {}
 
 func (x *AddResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_main_proto_msgTypes[1]
+	mi := &file_main_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -110,7 +110,7 @@ func (x *AddResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AddResponse.ProtoReflect.Descriptor instead.
 func (*AddResponse) Descriptor() ([]byte, []int) {
-	return file_proto_main_proto_rawDescGZIP(), []int{1}
+	return file_main_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *AddResponse) GetSum() int32 {
@@ -120,11 +120,12 @@ func (x *AddResponse) GetSum() int32 {
 	return 0
 }
 
-var File_proto_main_proto protoreflect.FileDescriptor
+var File_main_proto protoreflect.FileDescriptor
 
-const file_proto_main_proto_rawDesc = "" +
+const file_main_proto_rawDesc = "" +
 	"\n" +
-	"\x10proto/main.proto\x12\n" +
+	"\n" +
+	"main.proto\x12\n" +
 	"calculator\"(\n" +
 	"\n" +
 	"AddRequest\x12\f\n" +
@@ -136,23 +137,23 @@ const file_proto_main_proto_rawDesc = "" +
 	"\x03Add\x12\x16.calculator.AddRequest\x1a\x17.calculator.AddResponseB\x16Z\x14/proto/gen;mainapipbb\x06proto3"
 
 var (
-	file_proto_main_proto_rawDescOnce sync.Once
-	file_proto_main_proto_rawDescData []byte
+	file_main_proto_rawDescOnce sync.Once
+	file_main_proto_rawDescData []byte
 )
 
-func file_proto_main_proto_rawDescGZIP() []byte {
-	file_proto_main_proto_rawDescOnce.Do(func() {
-		file_proto_main_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_proto_main_proto_rawDesc), len(file_proto_main_proto_rawDesc)))
+func file_main_proto_rawDescGZIP() []byte {
+	file_main_proto_rawDescOnce.Do(func() {
+		file_main_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_main_proto_rawDesc), len(file_main_proto_rawDesc)))
 	})
-	return file_proto_main_proto_rawDescData
+	return file_main_proto_rawDescData
 }
 
-var file_proto_main_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
-var file_proto_main_proto_goTypes = []any{
+var file_main_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
+var file_main_proto_goTypes = []any{
 	(*AddRequest)(nil),  // 0: calculator.AddRequest
 	(*AddResponse)(nil), // 1: calculator.AddResponse
 }
-var file_proto_main_proto_depIdxs = []int32{
+var file_main_proto_depIdxs = []int32{
 	0, // 0: calculator.Calculate.Add:input_type -> calculator.AddRequest
 	1, // 1: calculator.Calculate.Add:output_type -> calculator.AddResponse
 	1, // [1:2] is the sub-list for method output_type
@@ -162,26 +163,26 @@ var file_proto_main_proto_depIdxs = []int32{
 	0, // [0:0] is the sub-list for field type_name
 }
 
-func init() { file_proto_main_proto_init() }
-func file_proto_main_proto_init() {
-	if File_proto_main_proto != nil {
+func init() { file_main_proto_init() }
+func file_main_proto_init() {
+	if File_main_proto != nil {
 		return
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_main_proto_rawDesc), len(file_proto_main_proto_rawDesc)),
+			RawDescriptor: unsafe.Slice(unsafe.StringData(file_main_proto_rawDesc), len(file_main_proto_rawDesc)),
 			NumEnums:      0,
 			NumMessages:   2,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
-		GoTypes:           file_proto_main_proto_goTypes,
-		DependencyIndexes: file_proto_main_proto_depIdxs,
-		MessageInfos:      file_proto_main_proto_msgTypes,
+		GoTypes:           file_main_proto_goTypes,
+		DependencyIndexes: file_main_proto_depIdxs,
+		MessageInfos:      file_main_proto_msgTypes,
 	}.Build()
-	File_proto_main_proto = out.File
-	file_proto_main_proto_goTypes = nil
-	file_proto_main_proto_depIdxs = nil
+	File_main_proto = out.File
+	file_main_proto_goTypes = nil
+	file_main_proto_depIdxs = nil
 }

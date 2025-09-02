@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.5.1
 // - protoc             v6.32.0
-// source: proto/main.proto
+// source: main.proto
 
 // import "greeter.proto";
 // import "farewell/farewell.proto";
@@ -120,5 +120,5 @@ var Calculate_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "proto/main.proto",
+	Metadata: "main.proto",
 }

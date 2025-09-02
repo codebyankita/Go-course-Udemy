@@ -1,8 +1,4 @@
-ankitakapadiya@Ankitas-MacBook-Pro grpc_client % protoc --go_out=. --go-grpc_out=. proto/main.proto
-
-ankitakapadiya@Ankitas-MacBook-Pro grpc_client % go mod init 
-simplegrpcclient
-go: creating new go.mod: module simplegrpcclient
-go: to add module requirements and sums:
-        go mod tidy
-ankitakapadiya@Ankitas-MacBook-Pro grpc_client %  go get google.golang.org/grpc
+ protoc --go_out=. --go-grpc_out=. proto/main.proto
+ protoc -I=proto --go_out=. --go-grpc_out=. proto/main.proto proto/greeter.proto
+ go mod init simplegrpcclient
+  go get google.golang.org/grpc

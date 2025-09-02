@@ -1,11 +1,11 @@
 package main
 
 import (
-	// "context"
+	"context"
 	"log"
-	// "time"
+	"time"
 
-	// mainapipb "simplegrpcclient/proto/gen"
+	mainapipb "simplegrpcclient/proto/gen"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
@@ -25,26 +25,26 @@ func main() {
 	}
 	defer conn.Close()
 
-	// // Create client
-	// client := mainapipb.NewCalculateClient(conn)
+	// Create client
+	client := mainapipb.NewCalculateClient(conn)
 
-	// // Set context with timeout
-	// ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-	// defer cancel()
+	// Set context with timeout
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
 
-	// // Build request
-	// req := &mainapipb.AddRequest{
-	// 	A: 10,
-	// 	B: 20,
-	// }
+	// Build request
+	req := &mainapipb.AddRequest{
+		A: 10,
+		B: 20,
+	}
 
-	// // Call RPC
-	// res, err := client.Add(ctx, req)
-	// if err != nil {
-	// 	log.Fatalln("Could not add:", err)
-	// }
+	// Call RPC
+	res, err := client.Add(ctx, req)
+	if err != nil {
+		log.Fatalln("Could not add:", err)
+	}
 
-	// log.Println("Sum:", res.Sum)
+	log.Println("Sum:", res.Sum)
 	state := conn.GetState()
 	log.Println("Connection State:", state)
 }

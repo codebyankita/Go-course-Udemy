@@ -1,5 +1,6 @@
 protoc --go_out=. --go-grpc_out=. proto/main.proto
 protoc --go_out=. --go-grpc_out=. proto/main.proto
+protoc -I=proto --go_out=. --go-grpc_out=. proto/main.proto proto/greeter.proto 
  go mod init simplegrpcserver
 
  go get google.golang.org/grpc
