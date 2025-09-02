@@ -28,6 +28,8 @@ func main() {
 	// Create client
 	client := mainapipb.NewCalculateClient(conn)
 
+	client2 := mainapipb.NewGreeterClient(conn)
+
 	// Set context with timeout
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
@@ -43,8 +45,16 @@ func main() {
 	if err != nil {
 		log.Fatalln("Could not add:", err)
 	}
+	reqGreet := &mainapipb.HelloRequest{
+		Name: "John",
+	}
+	res1, err := client2.Greet(ctx, reqGreet)
+	if err != nil {
+		log.Fatalln("Could not greet", err)
+	}
 
 	log.Println("Sum:", res.Sum)
+	log.Println("Greeting message:", res1.Message)
 	state := conn.GetState()
 	log.Println("Connection State:", state)
 }
