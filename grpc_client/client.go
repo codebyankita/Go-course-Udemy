@@ -3,29 +3,46 @@ package main
 import (
 	"context"
 	"log"
-	mainapipb "simplegrpcclient/proto/gen"
 	"time"
 
+	mainapipb "simplegrpcclient/proto/gen"
+
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/credentials"
 )
 
 func main() {
-	conn, err := grpc.NewClient("localhost:50051", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	// Load TLS certificate
+	creds, err := credentials.NewClientTLSFromFile("cert.pem", "")
 	if err != nil {
-		log.Fatalln("Did not connect:", err)
+		log.Fatalln("Failed to load TLS cert:", err)
+	}
+
+	// Dial gRPC server with TLS
+	conn, err := grpc.Dial("localhost:50051", grpc.WithTransportCredentials(creds))
+	if err != nil {
+		log.Fatalln("Failed to connect:", err)
 	}
 	defer conn.Close()
+
+	// Create client
 	client := mainapipb.NewCalculateClient(conn)
+
+	// Set context with timeout
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
-	req := mainapipb.AddRequest{
+
+	// Build request
+	req := &mainapipb.AddRequest{
 		A: 10,
 		B: 20,
 	}
-	res, err := client.Add(ctx, &req)
+
+	// Call RPC
+	res, err := client.Add(ctx, req)
 	if err != nil {
-		log.Fatalln("Could not add", err)
+		log.Fatalln("Could not add:", err)
 	}
+
 	log.Println("Sum:", res.Sum)
 }
