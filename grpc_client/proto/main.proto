@@ -13,7 +13,7 @@ service Calculate {
 
 service Greeter {
     rpc Greet (HelloRequest) returns (HelloResponse);
-    // rpc Add (HelloRequest) returns (HelloResponse);
+    rpc Add (HelloRequest) returns (HelloResponse); // This does not work. Duplicate
 }
 
 // service BidFarewell {

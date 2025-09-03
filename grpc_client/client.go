@@ -6,12 +6,14 @@ import (
 	"time"
 
 	mainapipb "simplegrpcclient/proto/gen"
+	farewellpb "simplegrpcclient/proto/gen/farewell"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 )
 
 func main() {
+	// cert := "cert.pem"
 	// Load TLS certificate
 	creds, err := credentials.NewClientTLSFromFile("cert.pem", "")
 	if err != nil {
@@ -28,7 +30,8 @@ func main() {
 	// Create client
 	client := mainapipb.NewCalculateClient(conn)
 
-	client2 := mainapipb.NewGreeterClient(conn)
+	// client2 := mainapipb.NewGreeterClient(conn)
+	fwClient := farewellpb.NewAufWiedersehenClient(conn)
 
 	// Set context with timeout
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
@@ -45,16 +48,27 @@ func main() {
 	if err != nil {
 		log.Fatalln("Could not add:", err)
 	}
-	reqGreet := &mainapipb.HelloRequest{
-		Name: "John",
+	// reqGreet := &mainapipb.HelloRequest{
+	// 	Name: "John",
+	// }
+	// res1, err := client2.Greet(ctx, reqGreet)
+	// if err != nil {
+	// 	log.Fatalln("Could not greet", err)
+	// }
+	// resAddFromGreeter, err := client2.Add(ctx, reqGreet)
+	// if err != nil {
+	// 	log.Println("Could not add-------", err)
+	// }
+	reqGoodBye := &farewellpb.GoodByeRequest{
+		Name: "Jane",
 	}
-	res1, err := client2.Greet(ctx, reqGreet)
+	resFw, err := fwClient.BidGoodBye(ctx, reqGoodBye)
 	if err != nil {
-		log.Fatalln("Could not greet", err)
+		log.Fatalln("Could not bid Goodbye", err)
 	}
-
 	log.Println("Sum:", res.Sum)
-	log.Println("Greeting message:", res1.Message)
+	// log.Println("Greeting message:", res1.Message)
+	log.Println("Goodbye message:", resFw.Message)
 	state := conn.GetState()
 	log.Println("Connection State:", state)
 }

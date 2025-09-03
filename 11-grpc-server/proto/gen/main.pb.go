@@ -7,6 +7,7 @@
 package mainapipb
 
 import (
+	farewell "simplegrpcserver/proto/gen/farewell"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
@@ -123,7 +124,7 @@ const file_main_proto_rawDesc = "" +
 	"\n" +
 	"\n" +
 	"main.proto\x12\n" +
-	"calculator\x1a\rgreeter.proto\"(\n" +
+	"calculator\x1a\rgreeter.proto\x1a\x17farewell/farewell.proto\"(\n" +
 	"\n" +
 	"AddRequest\x12\f\n" +
 	"\x01a\x18\x01 \x01(\x05R\x01a\x12\f\n" +
@@ -131,9 +132,13 @@ const file_main_proto_rawDesc = "" +
 	"\vAddResponse\x12\x10\n" +
 	"\x03sum\x18\x01 \x01(\x05R\x03sum2C\n" +
 	"\tCalculate\x126\n" +
-	"\x03Add\x12\x16.calculator.AddRequest\x1a\x17.calculator.AddResponse2G\n" +
+	"\x03Add\x12\x16.calculator.AddRequest\x1a\x17.calculator.AddResponse2\x83\x01\n" +
 	"\aGreeter\x12<\n" +
-	"\x05Greet\x12\x18.calculator.HelloRequest\x1a\x19.calculator.HelloResponseB\x16Z\x14/proto/gen;mainapipbb\x06proto3"
+	"\x05Greet\x12\x18.calculator.HelloRequest\x1a\x19.calculator.HelloResponse\x12:\n" +
+	"\x03Add\x12\x18.calculator.HelloRequest\x1a\x19.calculator.HelloResponse2P\n" +
+	"\vBidFarewell\x12A\n" +
+	"\n" +
+	"BidGoodBye\x12\x18.farewell.GoodByeRequest\x1a\x19.farewell.GoodByeResponseB\x16Z\x14/proto/gen;mainapipbb\x06proto3"
 
 var (
 	file_main_proto_rawDescOnce sync.Once
@@ -149,18 +154,24 @@ func file_main_proto_rawDescGZIP() []byte {
 
 var file_main_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
 var file_main_proto_goTypes = []any{
-	(*AddRequest)(nil),    // 0: calculator.AddRequest
-	(*AddResponse)(nil),   // 1: calculator.AddResponse
-	(*HelloRequest)(nil),  // 2: calculator.HelloRequest
-	(*HelloResponse)(nil), // 3: calculator.HelloResponse
+	(*AddRequest)(nil),               // 0: calculator.AddRequest
+	(*AddResponse)(nil),              // 1: calculator.AddResponse
+	(*HelloRequest)(nil),             // 2: calculator.HelloRequest
+	(*farewell.GoodByeRequest)(nil),  // 3: farewell.GoodByeRequest
+	(*HelloResponse)(nil),            // 4: calculator.HelloResponse
+	(*farewell.GoodByeResponse)(nil), // 5: farewell.GoodByeResponse
 }
 var file_main_proto_depIdxs = []int32{
 	0, // 0: calculator.Calculate.Add:input_type -> calculator.AddRequest
 	2, // 1: calculator.Greeter.Greet:input_type -> calculator.HelloRequest
-	1, // 2: calculator.Calculate.Add:output_type -> calculator.AddResponse
-	3, // 3: calculator.Greeter.Greet:output_type -> calculator.HelloResponse
-	2, // [2:4] is the sub-list for method output_type
-	0, // [0:2] is the sub-list for method input_type
+	2, // 2: calculator.Greeter.Add:input_type -> calculator.HelloRequest
+	3, // 3: calculator.BidFarewell.BidGoodBye:input_type -> farewell.GoodByeRequest
+	1, // 4: calculator.Calculate.Add:output_type -> calculator.AddResponse
+	4, // 5: calculator.Greeter.Greet:output_type -> calculator.HelloResponse
+	4, // 6: calculator.Greeter.Add:output_type -> calculator.HelloResponse
+	5, // 7: calculator.BidFarewell.BidGoodBye:output_type -> farewell.GoodByeResponse
+	4, // [4:8] is the sub-list for method output_type
+	0, // [0:4] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
 	0, // [0:0] is the sub-list for extension extendee
 	0, // [0:0] is the sub-list for field type_name
@@ -180,7 +191,7 @@ func file_main_proto_init() {
 			NumEnums:      0,
 			NumMessages:   2,
 			NumExtensions: 0,
-			NumServices:   2,
+			NumServices:   3,
 		},
 		GoTypes:           file_main_proto_goTypes,
 		DependencyIndexes: file_main_proto_depIdxs,

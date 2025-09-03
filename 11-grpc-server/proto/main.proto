@@ -1,7 +1,7 @@
 syntax = "proto3";
 
 import "greeter.proto";
-// import "farewell/farewell.proto";
+import "farewell/farewell.proto";
 
 package calculator;
 
@@ -13,12 +13,12 @@ service Calculate {
 
 service Greeter {
     rpc Greet (HelloRequest) returns (HelloResponse);
-    // rpc Add (HelloRequest) returns (HelloResponse);
+    rpc Add (HelloRequest) returns (HelloResponse);
 }
 
-// service BidFarewell {
-//     rpc BidGoodBye(farewell.GoodByeRequest) returns (farewell.GoodByeResponse);
-// }
+service BidFarewell {
+    rpc BidGoodBye(farewell.GoodByeRequest) returns (farewell.GoodByeResponse);
+}
 
 message AddRequest {
     int32 a = 1;

@@ -117,10 +117,7 @@ const file_farewell_farewell_proto_rawDesc = "" +
 	"\x0eGoodByeRequest\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\"+\n" +
 	"\x0fGoodByeResponse\x12\x18\n" +
-	"\amessage\x18\x02 \x01(\tR\amessage2S\n" +
-	"\x0eAufWiedersehen\x12A\n" +
-	"\n" +
-	"BidGoodBye\x12\x18.farewell.GoodByeRequest\x1a\x19.farewell.GoodByeResponseB Z\x1e/proto/gen/farewell;farewellpbb\x06proto3"
+	"\amessage\x18\x02 \x01(\tR\amessageB Z\x1e/proto/gen/farewell;farewellpbb\x06proto3"
 
 var (
 	file_farewell_farewell_proto_rawDescOnce sync.Once
@@ -140,10 +137,8 @@ var file_farewell_farewell_proto_goTypes = []any{
 	(*GoodByeResponse)(nil), // 1: farewell.GoodByeResponse
 }
 var file_farewell_farewell_proto_depIdxs = []int32{
-	0, // 0: farewell.AufWiedersehen.BidGoodBye:input_type -> farewell.GoodByeRequest
-	1, // 1: farewell.AufWiedersehen.BidGoodBye:output_type -> farewell.GoodByeResponse
-	1, // [1:2] is the sub-list for method output_type
-	0, // [0:1] is the sub-list for method input_type
+	0, // [0:0] is the sub-list for method output_type
+	0, // [0:0] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
 	0, // [0:0] is the sub-list for extension extendee
 	0, // [0:0] is the sub-list for field type_name
@@ -162,7 +157,7 @@ func file_farewell_farewell_proto_init() {
 			NumEnums:      0,
 			NumMessages:   2,
 			NumExtensions: 0,
-			NumServices:   1,
+			NumServices:   0,
 		},
 		GoTypes:           file_farewell_farewell_proto_goTypes,
 		DependencyIndexes: file_farewell_farewell_proto_depIdxs,

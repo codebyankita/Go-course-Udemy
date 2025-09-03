@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net"
 
@@ -14,8 +15,12 @@ import (
 
 type server struct {
 	pb.UnimplementedCalculateServer
+	pb.BidFarewellServer
+	// farewellpb.UnimplementedAufWiedersehenServer
+}
+
+type serverGreeter struct {
 	pb.UnimplementedGreeterServer
-	farewellpb.UnimplementedAufWiedersehenServer
 }
 
 func (s *server) Add(ctx context.Context, req *pb.AddRequest) (*pb.AddResponse, error) {
@@ -23,6 +28,16 @@ func (s *server) Add(ctx context.Context, req *pb.AddRequest) (*pb.AddResponse, 
 	log.Println("Sum:", sum)
 	return &pb.AddResponse{
 		Sum: sum,
+	}, nil
+}
+// func (s *server) Add(ctx context.Context, req *pb.HelloRequest) (*pb.HelloResponse, error) {
+// 	return &pb.HelloResponse{
+// 		Message: fmt.Sprintf("Hello %s. Nice to receive request from you", req.Name),
+// 	}, nil
+// }
+func (s *server) Greet(ctx context.Context, req *pb.HelloRequest) (*pb.HelloResponse, error) {
+	return &pb.HelloResponse{
+		Message: fmt.Sprintf("Hello %s. Nice to receive request from you", req.Name),
 	}, nil
 }
 func main() {
@@ -42,8 +57,9 @@ func main() {
 	}
 	grpcServer := grpc.NewServer(grpc.Creds(creds))
 	pb.RegisterCalculateServer(grpcServer, &server{})
-	pb.RegisterGreeterServer(grpcServer, &server{})
-	 farewellpb.RegisterAufWiedersehenServer(grpcServer, &server{})
+		pb.RegisterGreeterServer(grpcServer, &serverGreeter{})
+	pb.RegisterBidFarewellServer(grpcServer, &server{})
+	farewellpb.RegisterAufWiedersehenServer(grpcServer, &server{})
 	// pb.RegisterBidFarewellServer(grpcServer, &server{})
 
 	log.Println("Server is running on port", port)
