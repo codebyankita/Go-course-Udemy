@@ -4,11 +4,11 @@ package farewell;
 
 option go_package = "/proto/gen/farewell;farewellpb";
 
-
+/*
 service AufWiedersehen {
     rpc BidGoodBye(GoodByeRequest) returns (GoodByeResponse);
 }
-
+*/
 
 message GoodByeRequest {
     string name = 1;
