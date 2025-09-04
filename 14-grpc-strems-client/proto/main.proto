@@ -8,12 +8,12 @@ service Calculator {
     rpc Add (AddRequest) returns (AddResponse);  // Unary RPC
     rpc GenerateFibonacci (FibonacciRequest) returns (stream FibonacciResponse); // Server side stream
     rpc SendNumbers (stream NumberRequest) returns (NumberResponse);  // Client side stream
-    // rpc Chat (stream ChatMessage) returns (stream ChatMessage);     // Bi-Directional stream
+    rpc Chat (stream ChatMessage) returns (stream ChatMessage);     // Bi-Directional stream
 }
 
-// message ChatMessage {
-//     string message = 1;
-// }
+message ChatMessage {
+    string message = 1;
+}
 
 message NumberRequest{
     int32 number = 1;

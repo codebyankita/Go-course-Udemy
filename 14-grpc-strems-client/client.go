@@ -13,42 +13,38 @@ import (
 )
 
 func main() {
-	// Establish a connection to the gRPC server
 	conn, err := grpc.NewClient("localhost:50051", grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
-		log.Fatalf("Failed to connect to server: %v", err)
+		log.Fatalln(err)
 	}
 	defer conn.Close()
 
-	// Create a client for the Calculator service
 	client := mainpb.NewCalculatorClient(conn)
 
-	// Create a context
 	ctx := context.Background()
 
-	// Create a request for the Fibonacci stream with N=10
+	// -------- SERVER SIDE STREAMING STARTS
 	req := &mainpb.FibonacciRequest{
 		N: 10,
 	}
-
-	// Call the GenerateFibonacci streaming RPC
 	stream, err := client.GenerateFibonacci(ctx, req)
 	if err != nil {
-		log.Fatalf("Error calling GenerateFibonacci: %v", err)
+		log.Fatalln("Error calling GenerateFibonacci func:", err)
 	}
 
-	// Receive and process the stream of Fibonacci numbers
 	for {
 		resp, err := stream.Recv()
 		if err == io.EOF {
-			log.Println("End of Fibonacci stream")
+			log.Println("End of stream")
 			break
 		}
 		if err != nil {
-			log.Fatalf("Error receiving data from GenerateFibonacci: %v", err)
+			log.Fatalln("Error receiving data from GenerateFibonacci func:", err)
 		}
-		log.Printf("Fibonacci number: %d", resp.GetNumber())
+		log.Println("Fibonacci number: ", resp.GetNumber())
 	}
+	// -------- SERVER SIDE STREAMING ENDS
+
 	// -------- CLIENT SIDE STREAMING STARTS
 	stream1, err := client.SendNumbers(ctx)
 	if err != nil {
@@ -69,4 +65,44 @@ func main() {
 		log.Fatalln("Error receiving response:", err)
 	}
 	log.Println("SUM:", res.Sum)
+
+	// -------- CLIENT SIDE STREAMING ENDS
+
+	// -------- BIDIRECTIONAL STREAMING STARTS
+	chatStream, err := client.Chat(ctx)
+	if err != nil {
+		log.Fatalln("Error creating chat stream:", err)
+	}
+
+	waitc := make(chan struct{})
+	// Send messages in a goroutine
+	go func() {
+		messages := []string{"Hello", "How are you?", "Goodbye"}
+		for _, message := range messages {
+			log.Println("Sending message:", message)
+			err := chatStream.Send(&mainpb.ChatMessage{Message: message})
+			if err != nil {
+				log.Fatalln(err)
+			}
+			time.Sleep(time.Second)
+		}
+		chatStream.CloseSend()
+	}()
+
+	// Receive messages in goroutine
+	go func() {
+		for {
+			res, err := chatStream.Recv()
+			if err == io.EOF {
+				log.Println("End of stream")
+				break
+			}
+			if err != nil {
+				log.Fatalln("Error receiving data from GenerateFibonacci func:", err)
+			}
+			log.Println("Received response: ", res.GetMessage())
+		}
+		close(waitc)
+	}()
+	<-waitc
 }

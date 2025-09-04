@@ -6,8 +6,13 @@ import (
 	"time"
 	"io"
 	mainpb "13-grpc-streams/proto/gen"
-
+	"bufio"
+	"fmt"
+	"os"
+	"strings"
+	
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 )
 
 // server implements the Calculator service
@@ -52,6 +57,41 @@ func (s *server) SendNumbers(stream mainpb.Calculator_SendNumbersServer) error {
 		sum += req.GetNumber()
 	}
 }
+func (s *server) Chat(stream mainpb.Calculator_ChatServer) error {
+	reader := bufio.NewReader(os.Stdin)
+
+	for {
+		// Receiving values/messages from stream
+		req, err := stream.Recv()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			log.Fatalln(err)
+		}
+		log.Println("Received Message:", req.GetMessage())
+
+		// Read input from the terminal
+		fmt.Print("Enter response: ")
+		input, err := reader.ReadString('\n')
+		if err != nil {
+			return err
+		}
+
+		input = strings.TrimSpace(input)
+
+		response := &mainpb.ChatMessage{
+			Message: input,
+		}
+		// Sending data/messages/values through the stream
+		err = stream.Send(response)
+		if err != nil {
+			return err
+		}
+	}
+	fmt.Println("Returning control")
+	return nil
+}
 
 func main() {
 	// Listen on TCP port 50051
@@ -65,7 +105,12 @@ func main() {
 
 	// Register the Calculator service
 	mainpb.RegisterCalculatorServer(grpcServer, &server{})
-
+// Enable reflection
+	reflection.Register(grpcServer)
+	err = grpcServer.Serve(lis)
+	if err != nil {
+		log.Fatalln(err)
+	}
 	// Start serving
 	log.Println("Starting gRPC server on :50051")
 	if err := grpcServer.Serve(lis); err != nil {
