@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# Navigate to the server project directory
-cd ~/go-udemy-course/13-grpc-streams
+# Navigate to the client project directory
+cd ~/go-udemy-course/14-grpc-streams-client
 
 # Initialize Go module
 rm -f go.mod go.sum
-go mod init 13-grpc-streams
+go mod init 14-grpc-streams-client
 
 # Install dependencies
 go get google.golang.org/grpc
@@ -19,10 +19,10 @@ go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
 export PATH=$PATH:$HOME/go/bin
 
 # Create directory for generated files
-mkdir -p grpcstreams/proto/gen
+mkdir -p grpcstreamclient/proto/gen
 
 # Generate Protobuf and gRPC code
-protoc --go_out=grpcstreams/proto/gen --go-grpc_out=grpcstreams/proto/gen proto/main.proto
+protoc --go_out=grpcstreamclient/proto/gen --go-grpc_out=grpcstreamclient/proto/gen proto/main.proto
 
-# Run the server
-go run server.go
+# Run the client
+go run client.go
