@@ -14,3 +14,41 @@ ankitakapadiya@Ankitas-MacBook-Pro grpc_client % code .
 ankitakapadiya@Ankitas-MacBook-Pro grpc_client % 
  openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
 -keyout key.pem -out cert.pem -config cert.conf
+
+
+
+
+1059  cd ..
+ 1060  cd grpc_client
+ 1061  go mod init
+ 1062  go mod tidy
+ 1063  go run client.go
+ 1064  go run client.go
+ 1065  cd 11-grpc-server
+ 1066  lsof -i :50051\n
+ 1067  grpcurl -plaintext localhost:50051 list\n
+ 1068  grpcurl -plaintext localhost:50051 list\n
+ 1069  grpcurl -plaintext localhost:50051 list\n
+ 1070  grpcurl -cert cert.pem -key key.pem -insecure -d  '{"a":1,"b":2}'
+ 1071  grpcurl -cert cert.pem -key key.pem -insecure -d  '{"a":1,"b":2}' localhost:50051 calculator.Calculate/Add
+ 1072  grpcurl -plaintext -d '{"a":1,"b":2}' localhost:50051 calculator.Calculate/Add\n
+ 1073  openssl req -newkey rsa:2048 -nodes -keyout key.pem \\n    -x509 -days 365 -out cert.pem -subj "/CN=localhost"\n
+ 1074  grpcurl -insecure -d '{"a":1,"b":2}' localhost:50051 calculator.Calculate/Add\n
+ankitakapadiya@
+
+
+
+94  brew install grpcurl
+  995  grpcurl -plaintext localhost:50051 list
+  996  grpcurl -plaintext localhost:50051 list\n
+  997  grpcurl -plaintext localhost:50051 list\n
+  998  git clone github.com/envoyproxy/protoc-gen-validate
+  999  go get -d github.com/envoyproxy/protoc-gen-validate
+ 1000  mv protoc-gen-validate /usr/local/bin/\n
+ 1001  mv protoc-gen-validate /usr/local/bin/\n
+ 1002  protoc-gen-validate --version\n
+ 1003  git clone https://github.com/bufbuild/protoc-gen-validate.git
+ 1004  cd protoc-gen-validate\nmake build
+ 1005  export PATH="$PATH:$(pwd)/bin"\n
+ 1006  go install github.com/envoyproxy/protoc-gen-validate@latest\n
+ 1007  export PATH=$PATH:$(go env GOPATH)/bin\n

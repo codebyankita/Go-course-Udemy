@@ -91,6 +91,7 @@ func main() {
 	}
 
 	grpcServer := grpc.NewServer(grpc.Creds(creds))
+// grpcServer := grpc.NewServer() // no creds
 
 	pb.RegisterCalculateServer(grpcServer, &server{})
 	pb.RegisterGreeterServer(grpcServer, &serverGreeter{})
