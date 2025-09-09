@@ -1,0 +1,12 @@
+{
+  "proto": "/Users/ankitakapadiya/Documents/code/Golang/go-udemy-course/17-gRPC_gateway with TLS/proto/main.proto",
+  "call": "mainapi.Greeter.Greet",
+  "concurrency": 100,
+  "data": { "name": "JohnDoe" },
+  "max-duration": "20s",
+  "host": "localhost:50051",
+  "cert": "/Users/ankitakapadiya/Documents/code/Golang/go-udemy-course/17-gRPC_gateway with TLS/cert.pem",
+  "key": "/Users/ankitakapadiya/Documents/code/Golang/go-udemy-course/17-gRPC_gateway with TLS/key.pem",
+  "cacert": "/Users/ankitakapadiya/Documents/code/Golang/go-udemy-course/17-gRPC_gateway with TLS/cert.pem",
+  "root-cert": "/Users/ankitakapadiya/Documents/code/Golang/go-udemy-course/17-gRPC_gateway with TLS/cert.pem"
+}

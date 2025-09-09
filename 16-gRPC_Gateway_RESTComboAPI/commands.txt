@@ -3,6 +3,7 @@ protoc --go_out=. main.proto
 
 go get google.golang.org/grpc
 go get github.com/grpc-ecosystem/grpc-gateway/v2/runtime@v2.21.0
+go get github.com/grpc-ecosystem/grpc-gateway/v2/runtime@vv2.27.2 #new version
 
 protoc --go_out=. --go-grpc_out=. proto/main.proto  
 

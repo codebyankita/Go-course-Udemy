@@ -1,0 +1,65 @@
+protoc --go_out=. main.proto
+
+
+go get google.golang.org/grpc
+
+
+protoc --go_out=. --go-grpc_out=. proto/main.proto  
+
+
+protoc -I=. -I=$GOPATH/src/github.com/envoyproxy/protoc-gen-validate --go_out=. --go-grpc_out=. --validate_out=lang=go:. your_proto_file.proto
+
+protoc -I=proto --go_out=. --go-grpc_out=. --validate_out="lang=go:." main.proto
+
+protoc -I=proto --go_out=. --go-grpc_out=. --grpc-gateway_out=. –validate_out=”lang=go:.” proto/main.proto (sequencing matters, if we mention grpc gateway first and then validate out, it gives error)
+protoc -I=proto --go_out=. --go-grpc_out=. --validate_out="lang=go:." --grpc-gateway_out=. main.proto (but if we give validate out before grpc gateway it doesn’t give error and compiles)
+
+---------------USE THIS. The one below this is unnecessarily complicated and does the same thing that this does
+protoc -I=proto --go_out=. --go-grpc_out=. --validate_out="lang=go:." --grpc-gateway_out=. main.proto
+---------------------------------------------
+
+
+
+protoc -I . \
+    -I $(go list -f '{{ .Dir }}' -m github.com/grpc-ecosystem/grpc-gateway/v2) \
+    -I $(go list -f '{{ .Dir }}' -m github.com/envoyproxy/protoc-gen-validate) \
+    --go_out . --go_opt paths=source_relative \
+    --go-grpc_out . --go-grpc_opt paths=source_relative \
+    --grpc-gateway_out . --grpc-gateway_opt logtostderr=true --grpc-gateway_opt paths=source_relative \
+    --validate_out="lang=go:." \
+    main.proto
+
+
+-------------- THIS IS THE CORRECT COMMAND BUT UNNECESSARILY COMPLEX
+protoc -I=proto \
+    -I=$(go list -f '{{ .Dir }}' -m github.com/grpc-ecosystem/grpc-gateway/v2) \
+    -I=$(go list -f '{{ .Dir }}' -m github.com/envoyproxy/protoc-gen-validate) \
+    --go_out=. \
+    --go-grpc_out=.  \
+    --grpc-gateway_out=. --grpc-gateway_opt logtostderr=true \
+    proto/main.proto
+
+
+
+***** WITH VALIDATION
+protoc -I=proto \
+    -I=$(go list -f '{{ .Dir }}' -m github.com/grpc-ecosystem/grpc-gateway/v2) \
+    -I=$(go list -f '{{ .Dir }}' -m github.com/envoyproxy/protoc-gen-validate) \
+    --go_out=. \
+    --go-grpc_out=.  \
+    --grpc-gateway_out=. --grpc-gateway_opt logtostderr=true \
+    --validate_out="lang=go:." \
+    proto/main.proto
+
+
+protoc -I=proto \
+    --go_out=. \
+    --go-grpc_out=.  \
+    --grpc-gateway_out=. --grpc-gateway_opt logtostderr=true \
+    --validate_out="lang=go:." \
+    proto/main.proto
+
+
+    ghz --config benchmark_ghz.json
+    wrk -t10 -c20 -d20s --latency -s /Users/ankitakapadiya/Documents/code/Golang/go-udemy-course/17-gRPC_gateway\ with\ TLS/wrk_benchmarking.lua http://localhost:8000/v1/greet
+wrk -t10 -c20 -d20s --latency -s /Users/ankitakapadiya/Documents/code/Golang/go-udemy-course/17-gRPC_gateway\ with\ TLS/wrk_benchmarking.lua https://localhost:8080/v1/greet
