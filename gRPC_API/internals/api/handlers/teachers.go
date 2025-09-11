@@ -121,76 +121,49 @@ package handlers
 import (
 	"context"
 	"grpcapi/internals/repositories/mongodb"
-	"grpcapi/internals/models" 
-	"grpcapi/pkg/utils"
 	pb "grpcapi/proto/gen"
-	"reflect"
 
-	"go.mongodb.org/mongo-driver/bson/primitive"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
-// AddTeachers adds multiple teachers to MongoDB
+// AddTeachers gRPC handler – validates request and inserts into DB
 func (s *Server) AddTeachers(ctx context.Context, req *pb.Teachers) (*pb.Teachers, error) {
-	// Create MongoDB client
-	client, err := mongodb.CreateMongoClient()
-	if err != nil {
-		return nil, utils.ErrorHandler(err, "internal error")
-	}
-	defer client.Disconnect(ctx)
-
-	// Slice to hold model teachers
-	newTeachers := make([]*models.Teacher, len(req.GetTeachers()))
-
-	// Convert pb.Teacher → models.Teacher using reflection
-	for i, pbTeacher := range req.GetTeachers() {
-		modelTeacher := models.Teacher{}
-
-		pbVal := reflect.ValueOf(pbTeacher).Elem()
-		modelVal := reflect.ValueOf(&modelTeacher).Elem()
-
-		for j := 0; j < pbVal.NumField(); j++ {
-			pbField := pbVal.Field(j)
-			fieldName := pbVal.Type().Field(j).Name
-			modelField := modelVal.FieldByName(fieldName)
-
-			if modelField.IsValid() && modelField.CanSet() {
-				modelField.Set(pbField)
-			}
+	// Validate: no teacher should come with an existing ID
+	for _, teacher := range req.GetTeachers() {
+		if teacher.Id != "" {
+			return nil, status.Error(codes.InvalidArgument,
+				"request is in incorrect format: non-empty ID fields are not allowed.")
 		}
-
-		newTeachers[i] = &modelTeacher
 	}
 
 	// Insert teachers into MongoDB
-	addedTeachers := []*pb.Teacher{}
-	for _, teacher := range newTeachers {
-		result, err := client.Database("school").Collection("teachers").InsertOne(ctx, teacher)
-		if err != nil {
-			return nil, utils.ErrorHandler(err, "Error adding teacher to database")
-		}
-
-		if objectId, ok := result.InsertedID.(primitive.ObjectID); ok {
-			teacher.Id = objectId.Hex()
-		}
-
-		// Convert models.Teacher → pb.Teacher
-		pbTeacher := &pb.Teacher{}
-		modelVal := reflect.ValueOf(*teacher)
-		pbVal := reflect.ValueOf(pbTeacher).Elem()
-
-		for j := 0; j < modelVal.NumField(); j++ {
-			modelField := modelVal.Field(j)
-			modelFieldType := modelVal.Type().Field(j)
-			pbField := pbVal.FieldByName(modelFieldType.Name)
-
-			if pbField.IsValid() && pbField.CanSet() {
-				pbField.Set(modelField)
-			}
-		}
-
-		addedTeachers = append(addedTeachers, pbTeacher)
+	addedTeachers, err := mongodb.AddTeachersToDb(ctx, req.GetTeachers())
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	// Return final response
 	return &pb.Teachers{Teachers: addedTeachers}, nil
+}
+
+func (s *Server) GetTeachers(ctx context.Context, req *pb.GetTeachersRequest) (*pb.Teachers, error) {
+	// err := req.Validate()
+	// if err != nil {
+	// 	return nil, status.Error(codes.InvalidArgument, err.Error())
+	// }
+	// Filtering, getting the filters from the request, another function
+	filter, err := buildFilter(req.Teacher, &models.Teacher{})
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
+	// Sorting, getting the sort options from the request, another function
+	sortOptions := buildSortOptions(req.GetSortBy())
+	// Access the database to fetch data, another function
+
+	teachers, err := mongodb.GetTeachersFromDb(ctx, sortOptions, filter)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	return &pb.Teachers{Teachers: teachers}, nil
 }
