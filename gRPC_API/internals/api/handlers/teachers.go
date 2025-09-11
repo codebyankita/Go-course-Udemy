@@ -121,6 +121,7 @@ package handlers
 import (
 	"context"
 	"grpcapi/internals/repositories/mongodb"
+		"grpcapi/internals/models"
 	pb "grpcapi/proto/gen"
 
 	"google.golang.org/grpc/codes"
