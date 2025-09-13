@@ -4,7 +4,7 @@ import (
 	"context"
 	"grpcapi/internals/models"
 	"grpcapi/pkg/utils"
-	pb "grpcapi/proto/gen"
+	pb "grpcapi/proto/gen" 
 	"reflect"
 
 	"go.mongodb.org/mongo-driver/mongo"
@@ -64,7 +64,6 @@ func mapModelTeacherToPb(teacherModel models.Teacher) *pb.Teacher {
 func mapModelStudentToPb(studentModel models.Student) *pb.Student {
 	return mapModelToPb(studentModel, func() *pb.Student { return &pb.Student{} })
 }
-
 func mapModelExecToPb(execModel models.Exec) *pb.Exec {
 	return mapModelToPb(execModel, func() *pb.Exec { return &pb.Exec{} })
 }
