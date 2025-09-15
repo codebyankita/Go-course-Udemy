@@ -16,8 +16,8 @@ import (
 	// "strings"
 	// "time"
 
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
+	// "go.mongodb.org/mongo-driver/bson"
+	// "go.mongodb.org/mongo-driver/mongo"
 	"google.golang.org/grpc/codes"
 
 	// "google.golang.org/grpc/metadata"
@@ -102,30 +102,30 @@ func (s *Server) DeleteExecs(ctx context.Context, req *pb.ExecIds) (*pb.DeleteEx
 }
 
 func (s *Server) Login(ctx context.Context, req *pb.ExecLoginRequest) (*pb.ExecLoginResponse, error) {
-	client, err := mongodb.CreateMongoClient()
-	if err != nil {
-		return nil, utils.ErrorHandler(err, "internal error")
-	}
-	defer client.Disconnect(ctx)
-	filter := bson.M{"username": req.GetUsername()}
-	var exec models.Exec
-	err = client.Database("school").Collection("execs").FindOne(ctx, filter).Decode(&exec)
-	if err != nil {
-		if err == mongo.ErrNoDocuments {
-			return nil, utils.ErrorHandler(err, "user not found. Incorrect Username/Password")
-		}
-		return nil, utils.ErrorHandler(err, "internal error")
-	}
+	// client, err := mongodb.CreateMongoClient()
+	// if err != nil {
+	// 	return nil, utils.ErrorHandler(err, "internal error")
+	// }
+	// defer client.Disconnect(ctx)
+	// filter := bson.M{"username": req.GetUsername()}
+	// var exec models.Exec
+	// err = client.Database("school").Collection("execs").FindOne(ctx, filter).Decode(&exec)
+	// if err != nil {
+	// 	if err == mongo.ErrNoDocuments {
+	// 		return nil, utils.ErrorHandler(err, "user not found. Incorrect Username/Password")
+	// 	}
+	// 	return nil, utils.ErrorHandler(err, "internal error")
+	// }
 
 	// err := req.Validate()
 	// if err != nil {
 	// 	return nil, status.Error(codes.InvalidArgument, err.Error())
 	// }
 
-	// exec, err := mongodb.GetUserByUsername(ctx, req.GetUsername())
-	// if err != nil {
-	// 	return nil, status.Error(codes.InvalidArgument, err.Error())
-	// }
+	exec, err := mongodb.GetUserByUsername(ctx, req.GetUsername())
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
 
 	if exec.InactiveStatus {
 		return nil, status.Error(codes.Unauthenticated, "Account is inactive")
@@ -144,33 +144,33 @@ func (s *Server) Login(ctx context.Context, req *pb.ExecLoginRequest) (*pb.ExecL
 	return &pb.ExecLoginResponse{Status: true, Token: tokenString}, nil
 }
 
-// func (s *Server) UpdatePassword(ctx context.Context, req *pb.UpdatePasswordRequest) (*pb.UpdatePasswordResponse, error) {
-// 	username, userRole, err := mongodb.UpdatePasswordInDb(ctx, req)
-// 	if err != nil {
-// 		return nil, status.Errorf(codes.Internal, err.Error())
-// 	}
+func (s *Server) UpdatePassword(ctx context.Context, req *pb.UpdatePasswordRequest) (*pb.UpdatePasswordResponse, error) {
+	username, userRole, err := mongodb.UpdatePasswordInDb(ctx, req)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, err.Error())
+	}
 
-// 	token, err := utils.SignToken(req.Id, username, userRole)
-// 	if err != nil {
-// 		return nil, utils.ErrorHandler(err, "internal error")
-// 	}
+	token, err := utils.SignToken(req.Id, username, userRole)
+	if err != nil {
+		return nil, utils.ErrorHandler(err, "internal error")
+	}
 
-// 	return &pb.UpdatePasswordResponse{
-// 		PasswordUpdated: true,
-// 		Token:           token,
-// 	}, nil
-// }
+	return &pb.UpdatePasswordResponse{
+		PasswordUpdated: true,
+		Token:           token,
+	}, nil
+}
 
-// func (s *Server) DeactivateUser(ctx context.Context, req *pb.ExecIds) (*pb.Confirmation, error) {
-// 	result, err := mongodb.DeactivateUserInDb(ctx, req.GetIds())
-// 	if err != nil {
-// 		return nil, err
-// 	}
+func (s *Server) DeactivateUser(ctx context.Context, req *pb.ExecIds) (*pb.Confirmation, error) {
+	result, err := mongodb.DeactivateUserInDb(ctx, req.GetIds())
+	if err != nil {
+		return nil, err
+	}
 
-// 	return &pb.Confirmation{
-// 		Confirmation: result.ModifiedCount > 0,
-// 	}, nil
-// }
+	return &pb.Confirmation{
+		Confirmation: result.ModifiedCount > 0,
+	}, nil
+}
 
 // func (s *Server) ForgotPassword(ctx context.Context, req *pb.ForgotPasswordRequest) (*pb.ForgotPasswordResponse, error) {
 // 	email := req.GetEmail()
