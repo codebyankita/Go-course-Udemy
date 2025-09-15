@@ -7,6 +7,7 @@ import (
 	// "fmt"
 	"grpcapi/internals/models"
 	"grpcapi/internals/repositories/mongodb"
+	"grpcapi/pkg/utils"
 
 	// "grpcapi/pkg/utils"
 	// "grpcapi/pkg/utils"
@@ -15,7 +16,10 @@ import (
 	// "strings"
 	// "time"
 
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
 	"google.golang.org/grpc/codes"
+
 	// "google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 )
@@ -97,33 +101,48 @@ func (s *Server) DeleteExecs(ctx context.Context, req *pb.ExecIds) (*pb.DeleteEx
 	}, nil
 }
 
-// func (s *Server) Login(ctx context.Context, req *pb.ExecLoginRequest) (*pb.ExecLoginResponse, error) {
-// 	err := req.Validate()
-// 	if err != nil {
-// 		return nil, status.Error(codes.InvalidArgument, err.Error())
-// 	}
+func (s *Server) Login(ctx context.Context, req *pb.ExecLoginRequest) (*pb.ExecLoginResponse, error) {
+	client, err := mongodb.CreateMongoClient()
+	if err != nil {
+		return nil, utils.ErrorHandler(err, "internal error")
+	}
+	defer client.Disconnect(ctx)
+	filter := bson.M{"username": req.GetUsername()}
+	var exec models.Exec
+	err = client.Database("school").Collection("execs").FindOne(ctx, filter).Decode(&exec)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return nil, utils.ErrorHandler(err, "user not found. Incorrect Username/Password")
+		}
+		return nil, utils.ErrorHandler(err, "internal error")
+	}
 
-// 	exec, err := mongodb.GetUserByUsername(ctx, req.GetUsername())
-// 	if err != nil {
-// 		return nil, status.Error(codes.InvalidArgument, err.Error())
-// 	}
+	// err := req.Validate()
+	// if err != nil {
+	// 	return nil, status.Error(codes.InvalidArgument, err.Error())
+	// }
 
-// 	if exec.InactiveStatus {
-// 		return nil, status.Error(codes.Unauthenticated, "Account is inactive")
-// 	}
+	// exec, err := mongodb.GetUserByUsername(ctx, req.GetUsername())
+	// if err != nil {
+	// 	return nil, status.Error(codes.InvalidArgument, err.Error())
+	// }
 
-// 	err = utils.VerifyPassword(req.GetPassword(), exec.Password)
-// 	if err != nil {
-// 		return nil, status.Error(codes.Unauthenticated, "Incorrect username/password")
-// 	}
+	if exec.InactiveStatus {
+		return nil, status.Error(codes.Unauthenticated, "Account is inactive")
+	}
 
-// 	tokenString, err := utils.SignToken(exec.Id, exec.Username, exec.Role)
-// 	if err != nil {
-// 		return nil, status.Error(codes.Unauthenticated, "Could not create token.")
-// 	}
+	err = utils.VerifyPassword(req.GetPassword(), exec.Password)
+	if err != nil {
+		return nil, status.Error(codes.Unauthenticated, "Incorrect username/password")
+	}
 
-// 	return &pb.ExecLoginResponse{Status: true, Token: tokenString}, nil
-// }
+	tokenString, err := utils.SignToken(exec.Id, exec.Username, exec.Role)
+	if err != nil {
+		return nil, status.Error(codes.Unauthenticated, "Could not create token.")
+	}
+
+	return &pb.ExecLoginResponse{Status: true, Token: tokenString}, nil
+}
 
 // func (s *Server) UpdatePassword(ctx context.Context, req *pb.UpdatePasswordRequest) (*pb.UpdatePasswordResponse, error) {
 // 	username, userRole, err := mongodb.UpdatePasswordInDb(ctx, req)
