@@ -65,11 +65,11 @@ func (s *Server) UpdateStudents(ctx context.Context, req *pb.Students) (*pb.Stud
 }
 
 func (s *Server) DeleteStudents(ctx context.Context, req *pb.StudentIds) (*pb.DeleteStudentsConfirmation, error) {
-	ids := req.GetIds()
-	var studentIdsToDelete []string
-	for _, student := range ids {
-		studentIdsToDelete = append(studentIdsToDelete, student)
-	}
+	// ids := req.GetIds()
+	// var studentIdsToDelete []string
+	// for _, student := range ids {
+	// 	studentIdsToDelete = append(studentIdsToDelete, student)
+	// }
 
 	deletedIds, err := mongodb.DeleteStudentsFromDb(ctx, req.GetIds())
 	if err != nil {

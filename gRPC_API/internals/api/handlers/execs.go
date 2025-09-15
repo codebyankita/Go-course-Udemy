@@ -85,11 +85,11 @@ func (s *Server) UpdateExecs(ctx context.Context, req *pb.Execs) (*pb.Execs, err
 }
 
 func (s *Server) DeleteExecs(ctx context.Context, req *pb.ExecIds) (*pb.DeleteExecsConfirmation, error) {
-	ids := req.GetIds()
-	var execIdsToDelete []string
-	for _, exec := range ids {
-		execIdsToDelete = append(execIdsToDelete, exec)
-	}
+	// ids := req.GetIds()
+	// var execIdsToDelete []string
+	// for _, exec := range ids {
+	// 	execIdsToDelete = append(execIdsToDelete, exec)
+	// }
 	deletedIds, err := mongodb.DeleteExecsFromDb(ctx, req.GetIds())
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
@@ -102,20 +102,6 @@ func (s *Server) DeleteExecs(ctx context.Context, req *pb.ExecIds) (*pb.DeleteEx
 }
 
 func (s *Server) Login(ctx context.Context, req *pb.ExecLoginRequest) (*pb.ExecLoginResponse, error) {
-	// client, err := mongodb.CreateMongoClient()
-	// if err != nil {
-	// 	return nil, utils.ErrorHandler(err, "internal error")
-	// }
-	// defer client.Disconnect(ctx)
-	// filter := bson.M{"username": req.GetUsername()}
-	// var exec models.Exec
-	// err = client.Database("school").Collection("execs").FindOne(ctx, filter).Decode(&exec)
-	// if err != nil {
-	// 	if err == mongo.ErrNoDocuments {
-	// 		return nil, utils.ErrorHandler(err, "user not found. Incorrect Username/Password")
-	// 	}
-	// 	return nil, utils.ErrorHandler(err, "internal error")
-	// }
 
 	// err := req.Validate()
 	// if err != nil {
