@@ -2,6 +2,8 @@ package mongodb
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	// "crypto/rand"
 	// "crypto/sha256"
 	// "encoding/hex"
@@ -10,14 +12,17 @@ import (
 	"grpcapi/internals/models"
 	"grpcapi/pkg/utils"
 	pb "grpcapi/proto/gen"
+
 	// "os"
 	// "strconv"
 	"time"
 
 	// "github.com/go-mail/mail/v2"
 	// "go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	// "go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	// "go.mongodb.org/mongo-driver/mongo/options"
 )
 
@@ -60,78 +65,78 @@ func AddExecsToDb(ctx context.Context, execsFromReq []*pb.Exec) ([]*pb.Exec, err
 	return addedExecs, nil
 }
 
-// func GetExecsFromDb(ctx context.Context, sortOptions primitive.D, filter primitive.M) ([]*pb.Exec, error) {
-// 	client, err := CreateMongoClient()
-// 	if err != nil {
-// 		return nil, utils.ErrorHandler(err, "Internal Error")
-// 	}
-// 	defer client.Disconnect(ctx)
+func GetExecsFromDb(ctx context.Context, sortOptions primitive.D, filter primitive.M) ([]*pb.Exec, error) {
+	client, err := CreateMongoClient()
+	if err != nil {
+		return nil, utils.ErrorHandler(err, "Internal Error")
+	}
+	defer client.Disconnect(ctx)
 
-// 	coll := client.Database("school").Collection("execs")
-// 	var cursor *mongo.Cursor
-// 	if len(sortOptions) < 1 {
-// 		cursor, err = coll.Find(ctx, filter)
-// 	} else {
-// 		cursor, err = coll.Find(ctx, filter, options.Find().SetSort(sortOptions))
-// 	}
-// 	if err != nil {
-// 		return nil, utils.ErrorHandler(err, "Internal Error")
-// 	}
-// 	defer cursor.Close(ctx)
+	coll := client.Database("school").Collection("execs")
+	var cursor *mongo.Cursor
+	if len(sortOptions) < 1 {
+		cursor, err = coll.Find(ctx, filter)
+	} else {
+		cursor, err = coll.Find(ctx, filter, options.Find().SetSort(sortOptions))
+	}
+	if err != nil {
+		return nil, utils.ErrorHandler(err, "Internal Error")
+	}
+	defer cursor.Close(ctx)
 
-// 	execs, err := decodeEntities(ctx, cursor, func() *pb.Exec { return &pb.Exec{} }, func() *models.Exec { return &models.Exec{} })
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	return execs, nil
-// }
+	execs, err := decodeEntities(ctx, cursor, func() *pb.Exec { return &pb.Exec{} }, func() *models.Exec { return &models.Exec{} })
+	if err != nil {
+		return nil, err
+	}
+	return execs, nil
+}
 
-// func ModifyExecsInDb(ctx context.Context, pbExecs []*pb.Exec) ([]*pb.Exec, error) {
-// 	client, err := CreateMongoClient()
-// 	if err != nil {
-// 		return nil, utils.ErrorHandler(err, "internal error")
-// 	}
-// 	defer client.Disconnect(ctx)
+func ModifyExecsInDb(ctx context.Context, pbExecs []*pb.Exec) ([]*pb.Exec, error) {
+	client, err := CreateMongoClient()
+	if err != nil {
+		return nil, utils.ErrorHandler(err, "internal error")
+	}
+	defer client.Disconnect(ctx)
 
-// 	var updatedExecs []*pb.Exec
+	var updatedExecs []*pb.Exec
 
-// 	for _, exec := range pbExecs {
-// 		if exec.Id == "" {
-// 			return nil, utils.ErrorHandler(errors.New("id cannot be blank"), "Id cannot be blank")
-// 		}
+	for _, exec := range pbExecs {
+		if exec.Id == "" {
+			return nil, utils.ErrorHandler(errors.New("id cannot be blank"), "Id cannot be blank")
+		}
 
-// 		modelExec := mapPbExecToModelExec(exec)
+		modelExec := mapPbExecToModelExec(exec)
 
-// 		objId, err := primitive.ObjectIDFromHex(exec.Id)
-// 		if err != nil {
-// 			return nil, utils.ErrorHandler(err, "Invalid Id")
-// 		}
+		objId, err := primitive.ObjectIDFromHex(exec.Id)
+		if err != nil {
+			return nil, utils.ErrorHandler(err, "Invalid Id")
+		}
 
-// 		modelDoc, err := bson.Marshal(modelExec)
-// 		if err != nil {
-// 			return nil, utils.ErrorHandler(err, "internal error")
-// 		}
+		modelDoc, err := bson.Marshal(modelExec)
+		if err != nil {
+			return nil, utils.ErrorHandler(err, "internal error")
+		}
 
-// 		var updateDoc bson.M
-// 		err = bson.Unmarshal(modelDoc, &updateDoc)
-// 		if err != nil {
-// 			return nil, utils.ErrorHandler(err, "internal error")
-// 		}
+		var updateDoc bson.M
+		err = bson.Unmarshal(modelDoc, &updateDoc)
+		if err != nil {
+			return nil, utils.ErrorHandler(err, "internal error")
+		}
 
-// 		delete(updateDoc, "_id")
+		delete(updateDoc, "_id")
 
-// 		_, err = client.Database("school").Collection("execs").UpdateOne(ctx, bson.M{"_id": objId}, bson.M{"$set": updateDoc})
-// 		if err != nil {
-// 			return nil, utils.ErrorHandler(err, fmt.Sprintln("error updating exec id:", exec.Id))
-// 		}
+		_, err = client.Database("school").Collection("execs").UpdateOne(ctx, bson.M{"_id": objId}, bson.M{"$set": updateDoc})
+		if err != nil {
+			return nil, utils.ErrorHandler(err, fmt.Sprintln("error updating exec id:", exec.Id))
+		}
 
-// 		updatedExec := mapModelExecToPb(*modelExec)
+		updatedExec := mapModelExecToPb(*modelExec)
 
-// 		updatedExecs = append(updatedExecs, updatedExec)
+		updatedExecs = append(updatedExecs, updatedExec)
 
-// 	}
-// 	return updatedExecs, nil
-// }
+	}
+	return updatedExecs, nil
+}
 
 // func DeleteExecsFromDb(ctx context.Context, execIdsToDelete []string) ([]string, error) {
 // 	client, err := CreateMongoClient()
