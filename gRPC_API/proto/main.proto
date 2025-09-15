@@ -1,7 +1,7 @@
 syntax = "proto3";
 
-import "validate/validate.proto";
-import "students.proto";
+import "proto/validate/validate.proto";
+import "proto/students.proto";
 
 package main;
 

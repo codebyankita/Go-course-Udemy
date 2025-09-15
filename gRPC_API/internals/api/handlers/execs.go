@@ -7,6 +7,7 @@ import (
 	// "fmt"
 	"grpcapi/internals/models"
 	"grpcapi/internals/repositories/mongodb"
+
 	// "grpcapi/pkg/utils"
 	// "grpcapi/pkg/utils"
 	pb "grpcapi/proto/gen"
@@ -79,18 +80,22 @@ func (s *Server) UpdateExecs(ctx context.Context, req *pb.Execs) (*pb.Execs, err
 	return &pb.Execs{Execs: updatedExecs}, nil
 }
 
-// func (s *Server) DeleteExecs(ctx context.Context, req *pb.ExecIds) (*pb.DeleteExecsConfirmation, error) {
+func (s *Server) DeleteExecs(ctx context.Context, req *pb.ExecIds) (*pb.DeleteExecsConfirmation, error) {
+	ids := req.GetIds()
+	var execIdsToDelete []string
+	for _, exec := range ids {
+		execIdsToDelete = append(execIdsToDelete, exec)
+	}
+	deletedIds, err := mongodb.DeleteExecsFromDb(ctx, req.GetIds())
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
 
-// 	deletedIds, err := mongodb.DeleteExecsFromDb(ctx, req.GetIds())
-// 	if err != nil {
-// 		return nil, status.Error(codes.Internal, err.Error())
-// 	}
-
-// 	return &pb.DeleteExecsConfirmation{
-// 		Status:     "Execs successfully deleted",
-// 		DeletedIds: deletedIds,
-// 	}, nil
-// }
+	return &pb.DeleteExecsConfirmation{
+		Status:     "Execs successfully deleted",
+		DeletedIds: deletedIds,
+	}, nil
+}
 
 // func (s *Server) Login(ctx context.Context, req *pb.ExecLoginRequest) (*pb.ExecLoginResponse, error) {
 // 	err := req.Validate()

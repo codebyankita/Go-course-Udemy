@@ -138,38 +138,38 @@ func ModifyExecsInDb(ctx context.Context, pbExecs []*pb.Exec) ([]*pb.Exec, error
 	return updatedExecs, nil
 }
 
-// func DeleteExecsFromDb(ctx context.Context, execIdsToDelete []string) ([]string, error) {
-// 	client, err := CreateMongoClient()
-// 	if err != nil {
-// 		return nil, utils.ErrorHandler(err, "internal error")
-// 	}
-// 	defer client.Disconnect(ctx)
+func DeleteExecsFromDb(ctx context.Context, execIdsToDelete []string) ([]string, error) {
+	client, err := CreateMongoClient()
+	if err != nil {
+		return nil, utils.ErrorHandler(err, "internal error")
+	}
+	defer client.Disconnect(ctx)
 
-// 	objectIds := make([]primitive.ObjectID, len(execIdsToDelete))
-// 	for i, id := range execIdsToDelete {
-// 		objectId, err := primitive.ObjectIDFromHex(id)
-// 		if err != nil {
-// 			return nil, utils.ErrorHandler(err, fmt.Sprintf("incorrect id: %v", id))
-// 		}
-// 		objectIds[i] = objectId
-// 	}
+	objectIds := make([]primitive.ObjectID, len(execIdsToDelete))
+	for i, id := range execIdsToDelete {
+		objectId, err := primitive.ObjectIDFromHex(id)
+		if err != nil {
+			return nil, utils.ErrorHandler(err, fmt.Sprintf("incorrect id: %v", id))
+		}
+		objectIds[i] = objectId
+	}
 
-// 	filter := bson.M{"_id": bson.M{"$in": objectIds}}
-// 	result, err := client.Database("school").Collection("execs").DeleteMany(ctx, filter)
-// 	if err != nil {
-// 		return nil, utils.ErrorHandler(err, "internal error")
-// 	}
+	filter := bson.M{"_id": bson.M{"$in": objectIds}}
+	result, err := client.Database("school").Collection("execs").DeleteMany(ctx, filter)
+	if err != nil {
+		return nil, utils.ErrorHandler(err, "internal error")
+	}
 
-// 	if result.DeletedCount == 0 {
-// 		return nil, utils.ErrorHandler(err, "no execs were deleted. Ids/Entries do not exist.")
-// 	}
+	if result.DeletedCount == 0 {
+		return nil, utils.ErrorHandler(err, "no execs were deleted. Ids/Entries do not exist.")
+	}
 
-// 	deletedIds := make([]string, result.DeletedCount)
-// 	for i, id := range objectIds {
-// 		deletedIds[i] = id.Hex()
-// 	}
-// 	return deletedIds, nil
-// }
+	deletedIds := make([]string, result.DeletedCount)
+	for i, id := range objectIds {
+		deletedIds[i] = id.Hex()
+	}
+	return deletedIds, nil
+}
 
 // func GetUserByUsername(ctx context.Context, username string) (*models.Exec, error) {
 // 	client, err := CreateMongoClient()
