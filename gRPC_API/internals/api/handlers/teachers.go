@@ -181,3 +181,25 @@ func (s *Server) UpdateTeachers(ctx context.Context, req *pb.Teachers) (*pb.Teac
 
 	return &pb.Teachers{Teachers: updatedTeachers}, nil
 }
+
+func (s *Server) DeleteTeachers(ctx context.Context, req *pb.TeacherIds) (*pb.DeleteTeachersConfirmation, error) {
+	err := req.Validate()
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
+	ids := req.GetIds()
+	var teacherIdsToDelete []string
+	for _, teacher := range ids {
+		teacherIdsToDelete = append(teacherIdsToDelete, teacher.Id)
+	}
+
+	deletedIds, err := mongodb.DeleteTeachersFromDb(ctx, teacherIdsToDelete)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	return &pb.DeleteTeachersConfirmation{
+		Status:     "Teachers successfully deleted",
+		DeletedIds: deletedIds,
+	}, nil
+}
