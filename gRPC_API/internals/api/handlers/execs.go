@@ -2,6 +2,8 @@ package handlers
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	// "crypto/sha256"
 	// "encoding/hex"
 	// "fmt"
@@ -158,44 +160,44 @@ func (s *Server) DeactivateUser(ctx context.Context, req *pb.ExecIds) (*pb.Confi
 	}, nil
 }
 
-// func (s *Server) ForgotPassword(ctx context.Context, req *pb.ForgotPasswordRequest) (*pb.ForgotPasswordResponse, error) {
-// 	email := req.GetEmail()
+func (s *Server) ForgotPassword(ctx context.Context, req *pb.ForgotPasswordRequest) (*pb.ForgotPasswordResponse, error) {
+	email := req.GetEmail()
 
-// 	message, err := mongodb.ForgotPasswordDb(ctx, email)
-// 	if err != nil {
-// 		return nil, status.Error(codes.Internal, err.Error())
-// 	}
+	message, err := mongodb.ForgotPasswordDb(ctx, email)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
 
-// 	return &pb.ForgotPasswordResponse{
-// 		Confirmation: true,
-// 		Message:      message,
-// 	}, nil
-// }
+	return &pb.ForgotPasswordResponse{
+		Confirmation: true,
+		Message:      message,
+	}, nil
+}
 
-// func (s *Server) ResetPassword(ctx context.Context, req *pb.ResetPasswordRequest) (*pb.Confirmation, error) {
-// 	token := req.GetResetCode()
+func (s *Server) ResetPassword(ctx context.Context, req *pb.ResetPasswordRequest) (*pb.Confirmation, error) {
+	token := req.GetResetCode()
 
-// 	if req.GetNewPassword() != req.GetConfirmPassword() {
-// 		return nil, status.Error(codes.InvalidArgument, "Passwords do not match")
-// 	}
+	if req.GetNewPassword() != req.GetConfirmPassword() {
+		return nil, status.Error(codes.InvalidArgument, "Passwords do not match")
+	}
 
-// 	bytes, err := hex.DecodeString(token)
-// 	if err != nil {
-// 		return nil, utils.ErrorHandler(err, "internal error")
-// 	}
+	bytes, err := hex.DecodeString(token)
+	if err != nil {
+		return nil, utils.ErrorHandler(err, "internal error")
+	}
 
-// 	hashedToken := sha256.Sum256(bytes)
-// 	tokenInDb := hex.EncodeToString(hashedToken[:])
+	hashedToken := sha256.Sum256(bytes)
+	tokenInDb := hex.EncodeToString(hashedToken[:])
 
-// 	err = mongodb.ResetPasswordDb(ctx, tokenInDb, req.GetNewPassword())
-// 	if err != nil {
-// 		return nil, status.Error(codes.Internal, err.Error())
-// 	}
+	err = mongodb.ResetPasswordDb(ctx, tokenInDb, req.GetNewPassword())
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
 
-// 	return &pb.Confirmation{
-// 		Confirmation: true,
-// 	}, nil
-// }
+	return &pb.Confirmation{
+		Confirmation: true,
+	}, nil
+}
 
 // func (s *Server) Logout(ctx context.Context, req *pb.EmptyRequest) (*pb.ExecLogoutResponse, error) {
 // 	md, ok := metadata.FromIncomingContext(ctx)

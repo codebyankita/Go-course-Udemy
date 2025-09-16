@@ -94,7 +94,7 @@ package main
 import (
 	"fmt"
 	"grpcapi/internals/api/handlers"
-	// "grpcapi/internals/repositories/mongodb"
+	"grpcapi/internals/repositories/mongodb"
 	pb "grpcapi/proto/gen"
 	"log"
 	"net"
@@ -106,7 +106,7 @@ import (
 )
 
 func main() {
-	// mongodb.CreateMongoClient()
+	mongodb.CreateMongoClient()
 	// Load environment variables
 	err := godotenv.Load()
 	if err != nil {
