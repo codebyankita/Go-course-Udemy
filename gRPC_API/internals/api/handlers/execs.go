@@ -4,25 +4,20 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
-	// "crypto/sha256"
-	// "encoding/hex"
-	// "fmt"
+	"fmt"
+	"strconv"
+	"strings"
+	"time"
+
 	"grpcapi/internals/models"
 	"grpcapi/internals/repositories/mongodb"
 	"grpcapi/pkg/utils"
 
-	// "grpcapi/pkg/utils"
-	// "grpcapi/pkg/utils"
 	pb "grpcapi/proto/gen"
-	// "strconv"
-	// "strings"
-	// "time"
 
-	// "go.mongodb.org/mongo-driver/bson"
-	// "go.mongodb.org/mongo-driver/mongo"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/metadata"
 
-	// "google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 )
 
@@ -199,37 +194,37 @@ func (s *Server) ResetPassword(ctx context.Context, req *pb.ResetPasswordRequest
 	}, nil
 }
 
-// func (s *Server) Logout(ctx context.Context, req *pb.EmptyRequest) (*pb.ExecLogoutResponse, error) {
-// 	md, ok := metadata.FromIncomingContext(ctx)
-// 	if !ok {
-// 		return nil, status.Error(codes.Unauthenticated, "no metadata found")
-// 	}
+func (s *Server) Logout(ctx context.Context, req *pb.EmptyRequest) (*pb.ExecLogoutResponse, error) {
+	md, ok := metadata.FromIncomingContext(ctx)
+	if !ok {
+		return nil, status.Error(codes.Unauthenticated, "no metadata found")
+	}
 
-// 	val, ok := md["authorization"]
-// 	if !ok {
-// 		return nil, status.Error(codes.Unauthenticated, "Unauthorized Access")
-// 	}
+	val, ok := md["authorization"]
+	if !ok {
+		return nil, status.Error(codes.Unauthenticated, "Unauthorized Access")
+	}
 
-// 	token := strings.TrimPrefix(val[0], "Bearer ")
+	token := strings.TrimPrefix(val[0], "Bearer ")
 
-// 	if token == "" {
-// 		return nil, status.Error(codes.Unauthenticated, "Unauthorized Access")
-// 	}
+	if token == "" {
+		return nil, status.Error(codes.Unauthenticated, "Unauthorized Access")
+	}
 
-// 	expiryTimeStamp := ctx.Value(utils.ContextKey("expiresAt"))
-// 	expiryTimeStr := fmt.Sprintf("%v", expiryTimeStamp)
+	expiryTimeStamp := ctx.Value(utils.ContextKey("expiresAt"))
+	expiryTimeStr := fmt.Sprintf("%v", expiryTimeStamp)
 
-// 	expiryTimeInt, err := strconv.ParseInt(expiryTimeStr, 10, 64)
-// 	if err != nil {
-// 		utils.ErrorHandler(err, "")
-// 		return nil, status.Error(codes.Internal, "internal error")
-// 	}
+	expiryTimeInt, err := strconv.ParseInt(expiryTimeStr, 10, 64)
+	if err != nil {
+		utils.ErrorHandler(err, "")
+		return nil, status.Error(codes.Internal, "internal error")
+	}
 
-// 	expirytime := time.Unix(expiryTimeInt, 0)
+	expirytime := time.Unix(expiryTimeInt, 0)
 
-// 	utils.JwtStore.AddToken(token, expirytime)
+	utils.JwtStore.AddToken(token, expirytime)
 
-// 	return &pb.ExecLogoutResponse{
-// 		LoggedOut: true,
-// 	}, nil
-// }
+	return &pb.ExecLogoutResponse{
+		LoggedOut: true,
+	}, nil
+}
