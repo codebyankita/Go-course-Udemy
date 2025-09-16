@@ -94,6 +94,7 @@ package main
 import (
 	"fmt"
 	"grpcapi/internals/api/handlers"
+	"grpcapi/internals/api/interceptors"
 	"grpcapi/internals/repositories/mongodb"
 	pb "grpcapi/proto/gen"
 	"log"
@@ -114,7 +115,8 @@ func main() {
 	}
 
 	// Create new gRPC server
-	s := grpc.NewServer()
+	// s := grpc.NewServer()
+	s := grpc.NewServer(grpc.ChainUnaryInterceptor(interceptors.ResponseTimeInterceptor, interceptors.AuthenticationInterceptor))
 
 	// Register services
 	pb.RegisterExecsServiceServer(s, &handlers.Server{})
@@ -126,9 +128,6 @@ func main() {
 
 	// Get server port from env
 	port := os.Getenv("SERVER_PORT")
-	if port == "" {
-		port = ":50051" // fallback default
-	}
 
 	fmt.Println("🚀 gRPC Server is running on port", port)
 
